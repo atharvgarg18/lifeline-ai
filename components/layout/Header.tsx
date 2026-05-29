@@ -3,7 +3,7 @@
 export default function Header({
   onMenu,
 }: {
-  onMenu: () => void;
+  onMenu?: () => void;
 }) {
-  // paste TopHeader code here
+  return null;
 }

@@ -8,7 +8,7 @@ import {
   Download, FileText, Zap, AlertTriangle, CheckCircle, Star, Brain,
   Pill, Stethoscope, TrendingUp, TrendingDown, Eye, Printer, Share2,
   Award, AlertCircle, MoreHorizontal, ArrowRight, RefreshCw, Cpu,
-  FlaskConical, Microscope, Scan, Radio, Syringe, HeartPulse,
+  FlaskConical, Microscope, Scan, Radio, Syringe,
   BedDouble, ClipboardList, UserCheck, Flame, ChevronRight,
   ChevronLeft
 } from "lucide-react";
@@ -102,7 +102,7 @@ const emergencyHistory = [
 
 const labReports = [
   { id: 1, name: "Complete Blood Count", date: "May 20, 2025", type: "Blood Test", status: "Normal", icon: FlaskConical },
-  { id: 2, name: "12-Lead ECG Report", date: "May 12, 2025", type: "ECG", status: "Abnormal", icon: HeartPulse },
+  { id: 2, name: "12-Lead ECG Report", date: "May 12, 2025", type: "ECG", status: "Abnormal", icon: Heart },
   { id: 3, name: "Cardiac MRI", date: "May 16, 2025", type: "MRI", status: "Review", icon: Scan },
   { id: 4, name: "Chest X-Ray", date: "May 12, 2025", type: "X-Ray", status: "Normal", icon: Radio },
   { id: 5, name: "HbA1c Profile", date: "Apr 10, 2025", type: "Blood Test", status: "Borderline", icon: Microscope },
@@ -132,7 +132,7 @@ const typeConfig = {
   emergency: { color: "#ef4444", bg: "bg-red-50", border: "border-red-200", icon: AlertTriangle, label: "Emergency" },
   admission: { color: "#f59e0b", bg: "bg-amber-50", border: "border-amber-200", icon: BedDouble, label: "Admission" },
   treatment: { color: "#5373A5", bg: "bg-blue-50", border: "border-blue-200", icon: Stethoscope, label: "Treatment" },
-  recovery: { color: "#22c55e", bg: "bg-green-50", border: "border-green-200", icon: HeartPulse, label: "Recovery" },
+  recovery: { color: "#22c55e", bg: "bg-green-50", border: "border-green-200", icon: Heart, label: "Recovery" },
 };
 
 const statusColors: Record<string, string> = {
@@ -442,7 +442,7 @@ const CustomTooltipStyle = {
 function VitalTrends() {
   return (
     <motion.div {...fadeUp(0.25)} className={`${glassCard} p-6`}>
-      <SectionTitle icon={HeartPulse} title="Vital Trends" subtitle="Last 7 days monitoring" />
+      <SectionTitle icon={Heart} title="Vital Trends" subtitle="Last 7 days monitoring" />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {/* Heart Rate */}
         <div className="bg-red-50/60 border border-red-100 rounded-2xl p-4">

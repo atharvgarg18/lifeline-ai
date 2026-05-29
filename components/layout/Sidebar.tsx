@@ -7,5 +7,5 @@ export default function Sidebar({
   mobileOpen: boolean;
   onClose: () => void;
 }) {
-  // existing Sidebar code
+  return null;
 }
