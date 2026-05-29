@@ -116,12 +116,12 @@ function VitalRow({ icon: Icon, label, value, unit, color, normal }: {
 
 function BodySVG() {
   return (
-    <div className="relative flex items-center justify-center" style={{ height: "220px" }}>
+    <div className="relative flex items-center justify-center" style={{ height: "140px" }}>
       {/* Glow backdrop */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-40 h-56 rounded-full" style={{ background: "radial-gradient(ellipse,rgba(6,182,212,0.12) 0%,transparent 70%)" }} />
+        <div className="w-40 h-36 rounded-full" style={{ background: "radial-gradient(ellipse,rgba(6,182,212,0.12) 0%,transparent 70%)" }} />
       </div>
-      <svg viewBox="0 0 120 220" className="h-56 relative z-10" style={{ filter: "drop-shadow(0 0 12px rgba(6,182,212,0.35))" }}>
+      <svg viewBox="0 0 120 220" className="h-36 relative z-10" style={{ filter: "drop-shadow(0 0 12px rgba(6,182,212,0.35))" }}>
         {/* Body outline */}
         <ellipse cx="60" cy="28" rx="20" ry="22" fill="none" stroke="rgba(6,182,212,0.6)" strokeWidth="1.5" />
         {/* Neck */}
@@ -169,8 +169,8 @@ function BodySVG() {
 function HealthMonitorCard() {
   return (
     <GlassCard glow="cyan" delay={0}>
-      <div className="p-4">
-        <div className="flex items-center justify-start mb-4">
+      <div className="p-3">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-2xl flex items-center justify-center"
               style={{ background: "rgba(6,182,212,0.15)", border: "1px solid rgba(6,182,212,0.3)" }}>
@@ -197,7 +197,8 @@ function HealthMonitorCard() {
         </div>
 
         <div className="mt-3">
-          <HeartbeatLine />
+          {/* <HeartbeatLine /> */}
+          <div className="h-4" />
         </div>
       </div>
     </GlassCard>
@@ -215,7 +216,7 @@ function MedicineReminderCard() {
   return (
     <GlassCard glow="purple" delay={0.08}>
       <div className="p-4">
-        <div className="flex items-center justify-start mb-1">
+        <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-2xl flex items-center justify-center"
               style={{ background: "rgba(167,139,250,0.15)", border: "1px solid rgba(167,139,250,0.3)" }}>
@@ -236,7 +237,7 @@ function MedicineReminderCard() {
 
         {/* Brain / DNA visual */}
         <div className="relative rounded-2xl mb-4 overflow-hidden flex items-center justify-center"
-          style={{ height: "100px", background: "rgba(167,139,250,0.05)", border: "1px solid rgba(167,139,250,0.1)" }}>
+          style={{ height: "60px", background: "rgba(167,139,250,0.05)", border: "1px solid rgba(167,139,250,0.1)" }}>
           <svg viewBox="0 0 200 100" className="w-full h-auto opacity-60">
             {/* DNA helix */}
             {Array.from({ length: 10 }).map((_, i) => {
@@ -258,7 +259,7 @@ function MedicineReminderCard() {
           <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse,rgba(167,139,250,0.08) 0%,transparent 70%)" }} />
         </div>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           {meds.map((m, i) => (
             <motion.div
               key={m.name}
@@ -319,7 +320,7 @@ function EmergencyContactsCard() {
   return (
     <GlassCard glow="cyan" delay={0.16}>
       <div className="p-4">
-        <div className="flex items-center justify-start mb-5">
+        <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-2xl flex items-center justify-center"
               style={{ background: "rgba(6,182,212,0.15)", border: "1px solid rgba(6,182,212,0.3)" }}>
@@ -332,14 +333,14 @@ function EmergencyContactsCard() {
           </button>
         </div>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           {contacts.map((c, i) => (
             <motion.div
               key={c.name}
               initial={{ opacity: 0, x: 12 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 + i * 0.1 }}
-              className="flex items-center gap-3 p-2 rounded-2xl"
+              className="flex items-center gap-3 p-2 rounded-xl"
               style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.05)" }}
             >
               <ContactAvatar initials={c.initials} color={c.color} />
@@ -369,14 +370,23 @@ function EmergencyContactsCard() {
 ──────────────────────────────────────────── */
 function HealthHistoryCard() {
   const events = [
-    { date: "15 May 2025", label: "ECG Test", status: "Normal", color: "#22c55e" },
-    { date: "12 May 2025", label: "Blood Test", status: "Normal", color: "#22c55e" },
-    { date: "10 May 2025", label: "Chest X-Ray", status: "Normal", color: "#22c55e" },
-  ];
+ {
+   date:"15 May 2025",
+   label:"ECG Test",
+   status:"Normal",
+   color:"#22c55e"
+ },
+ {
+   date:"12 May 2025",
+   label:"Blood Test",
+   status:"Normal",
+   color:"#22c55e"
+ }
+]
   return (
     <GlassCard glow="green" delay={0.24}>
       <div className="p-4">
-        <div className="flex items-center justify-start mb-5">
+        <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-2xl flex items-center justify-center"
               style={{ background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.3)" }}>
@@ -406,7 +416,7 @@ function HealthHistoryCard() {
                 style={{ boxShadow: "0 0 8px rgba(34,197,94,0.6)", top: "2px" }} />
               <div className="p-3 rounded-2xl"
                 style={{ background: "rgba(34,197,94,0.04)", border: "1px solid rgba(34,197,94,0.12)" }}>
-                <div className="flex items-center justify-start">
+                <div className="flex items-center justify-between">
                   <div>
                     <p className="text-white text-xs font-bold">{e.label}</p>
                     <p className="text-slate-500 text-xs mt-0.5">{e.date}</p>
@@ -449,7 +459,7 @@ function AIHealthCard() {
 
         {/* AI brain visual */}
         <div className="relative rounded-2xl mb-4 overflow-hidden flex items-center justify-center"
-          style={{ height: "90px", background: "rgba(167,139,250,0.04)", border: "1px solid rgba(167,139,250,0.1)" }}>
+          style={{ height: "55px", background: "rgba(167,139,250,0.04)", border: "1px solid rgba(167,139,250,0.1)" }}>
           <svg viewBox="0 0 200 90" className="w-full h-auto opacity-50">
             {/* neural network nodes */}
             {[[30,45],[60,20],[60,70],[90,45],[120,20],[120,70],[150,45],[170,30],[170,60]].map(([x,y],i) => (
@@ -527,7 +537,7 @@ function PharmacyCard() {
           <span className="text-cyan-400 text-xs font-semibold">Quick Access</span>
         </div>
 
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           {services.map(({ label, icon:Icon, color, bg }) => (
             <motion.button key={label}
               whileHover={{ scale:1.06, y:-2 }} whileTap={{ scale:0.96 }}
@@ -537,7 +547,7 @@ function PharmacyCard() {
                 style={{ background:`${color}20` }}>
                 <Icon size={18} style={{ color }} />
               </div>
-              <span className="text-slate-300 font-medium leading-tight text-center" style={{ fontSize:"9px" }}>{label}</span>
+              <span className="text-slate-300 font-medium leading-tight text-center" style={{ fontSize:"10px" }}>{label}</span>
             </motion.button>
           ))}
         </div>
@@ -564,7 +574,7 @@ function QuickActionsCard() {
         {/* Emergency SOS Big Button */}
         <motion.button
           whileHover={{ scale:1.03 }} whileTap={{ scale:0.96 }}
-          className="w-full flex items-center gap-3 px-4 py-4 rounded-2xl mb-3 relative overflow-hidden"
+          className="w-full flex items-center gap-3 px-4 py-3rounded-2xl mb-3 relative overflow-hidden"
           style={{
             background:"linear-gradient(135deg,#dc2626 0%,#991b1b 100%)",
             border:"1px solid rgba(255,100,100,0.35)",
@@ -579,7 +589,8 @@ function QuickActionsCard() {
           </motion.div>
           <div className="text-left">
             <p className="text-red-200 text-xs font-semibold">Emergency</p>
-            <p className="text-white text-xl font-black leading-tight" style={{ fontFamily:"Rajdhani,sans-serif" }}>SOS</p>
+            <p className="text-white text-lg
+             font-black leading-tight" style={{ fontFamily:"Rajdhani,sans-serif" }}>SOS</p>
           </div>
           <motion.div className="ml-auto w-2 h-2 rounded-full bg-white"
             animate={{ opacity:[1,0.3,1] }} transition={{ duration:0.7, repeat:Infinity }} />
@@ -617,19 +628,37 @@ export default function HealthMonitoringSection() {
       <SectionLabel label="Health Monitoring & Quick Access" />
 
       {/* ROW 1: Health Monitor | Medicine Reminder | Emergency Contacts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-4">
-        <HealthMonitorCard />
-        <MedicineReminderCard />
-        <EmergencyContactsCard />
-      </div>
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
 
-      {/* ROW 2: History | AI Recs | Pharmacy | Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <HealthHistoryCard />
-        <AIHealthCard />
-        <PharmacyCard />
-        <QuickActionsCard />
-      </div>
+  <div className="xl:col-span-4">
+    <HealthMonitorCard />
+  </div>
+
+  <div className="xl:col-span-4">
+    <MedicineReminderCard />
+  </div>
+
+  <div className="xl:col-span-4">
+    <EmergencyContactsCard />
+  </div>
+
+  <div className="xl:col-span-3">
+    <HealthHistoryCard />
+  </div>
+
+  <div className="xl:col-span-3">
+    <AIHealthCard />
+  </div>
+
+  <div className="xl:col-span-3">
+    <PharmacyCard />
+  </div>
+
+  <div className="xl:col-span-3">
+    <QuickActionsCard />
+  </div>
+
+</div>
     </section>
   );
 }

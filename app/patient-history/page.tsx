@@ -1,4 +1,4 @@
-import LifeLineNavbar from "@/components/navbar/LifelineNavbar";
+import LifeLineNavbar from "@/components/navbar/LifeLineNavbar";
 import DashboardMiddleSection from "@/components/patient-history/DashboardMiddleSection";
 import HealthAnalyticsSection from "@/components/patient-history/HealthAnalyticsSection";
 import PatientProfileHeader from "@/components/patient-history/PatientProfileHeader";

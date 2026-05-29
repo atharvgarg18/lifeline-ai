@@ -1,11 +1,5 @@
-import "../styles/globals.css";
-
-
-
-export const metadata = {
-  title: "LifeLine AI",
-  description: "AI Powered Emergency Healthcare System",
-};
+import "@/styles/globals.css";
+import LifeLineNavbar from "@/components/navbar/LifeLineNavbar";
 
 export default function RootLayout({
   children,
@@ -14,7 +8,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <LifeLineNavbar>
+          {children}
+        </LifeLineNavbar>
+      </body>
     </html>
   );
 }

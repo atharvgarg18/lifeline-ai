@@ -23,8 +23,8 @@ const fadeUp = (delay = 0) => ({
 function GlassCard({
   children,
   className = "",
-  glowColor = "rgba(6,182,212,0.12)",
-  borderColor = "rgba(30,58,95,0.9)",
+  glowColor = "rgba(83,115,165,0.10)",
+  borderColor = "rgba(180,165,145,0.35)",
   delay = 0,
   style = {},
 }: {
@@ -36,59 +36,81 @@ function GlassCard({
   style?: React.CSSProperties;
 }) {
   const [hovered, setHovered] = useState(false);
+
   return (
     <motion.div
       {...fadeUp(delay)}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
-      whileHover={{ y: -1.5 }}
-      className={`relative rounded-3xl overflow-hidden backdrop-blur-xl ${className}`}
+      whileHover={{ y: -2 }}
+      className={`relative rounded-[30px] overflow-hidden backdrop-blur-xl ${className}`}
       style={{
-        background: "linear-gradient(145deg, rgba(10,20,46,0.97) 0%, rgba(5,11,23,0.99) 100%)",
-        border: `1px solid ${hovered ? "rgba(6,182,212,0.35)" : borderColor}`,
+        background:
+          "linear-gradient(145deg, rgba(233,225,214,0.96) 0%, rgba(217,206,192,0.98) 100%)",
+
+        border: `1px solid ${
+          hovered
+            ? "rgba(83,115,165,0.28)"
+            : borderColor
+        }`,
+
         boxShadow: hovered
-          ? `0 0 40px ${glowColor}, 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)`
-          : `0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.03)`,
-        transition: "border 0.3s, box-shadow 0.3s",
+          ? `0 18px 45px rgba(91,74,57,0.14),
+             0 0 0 1px rgba(83,115,165,0.08),
+             inset 0 1px 0 rgba(255,255,255,0.4)`
+          : `0 10px 30px rgba(91,74,57,0.10),
+             inset 0 1px 0 rgba(255,255,255,0.35)`,
+
+        transition: "all .35s ease",
         ...style,
       }}
     >
-      {/* ambient radial */}
+      {/* soft grain */}
+      <div
+        className="absolute inset-0 opacity-[0.025] pointer-events-none"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(0,0,0,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.08) 1px, transparent 1px)",
+          backgroundSize: "42px 42px",
+        }}
+      />
 
+      {/* top glow */}
       <div
-  className="absolute inset-0 opacity-[0.02] pointer-events-none"
-  style={{
-    backgroundImage:
-      "linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px)",
-    backgroundSize: "40px 40px",
-  }}
-/>
-      <div
-  className="absolute top-0 inset-x-0 h-px"
-  style={{
-    background:
-      "linear-gradient(90deg, transparent, rgba(6,182,212,0.4), transparent)",
-  }}
-/>
+        className="absolute top-0 inset-x-0 h-px"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent, rgba(83,115,165,0.35), transparent)",
+        }}
+      />
+
+      {/* ambient light */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: `radial-gradient(ellipse at 0% 0%, ${glowColor} 0%, transparent 60%)`,
-          opacity: hovered ? 1 : 0.5,
-          transition: "opacity 0.4s",
+          background: `
+            radial-gradient(
+              ellipse at top left,
+              rgba(255,255,255,0.45) 0%,
+              transparent 55%
+            )
+          `,
+          opacity: hovered ? 1 : 0.7,
+          transition: "opacity .4s ease",
         }}
       />
+
       <div
-  className="
-    relative z-10
-    before:absolute before:inset-0
-    before:rounded-[inherit]
-    before:border before:border-white/[0.03]
-    before:pointer-events-none
-  "
->
-  {children}
-</div>
+        className="
+          relative z-10
+          before:absolute before:inset-0
+          before:rounded-[inherit]
+          before:border before:border-white/[0.10]
+          before:pointer-events-none
+        "
+      >
+        {children}
+      </div>
     </motion.div>
   );
 }
@@ -118,30 +140,30 @@ function LiveMapCard() {
     { color: "#eab308", label: "Moderate" },
     { color: "#f97316", label: "High" },
     { color: "#ef4444", label: "Severe" },
-    { color: "#06b6d4", label: "Green Corridor", dashed: true },
+    { color: "#5373a5", label: "Green Corridor", dashed: true },
   ];
 
   return (
-    <GlassCard delay={0} glowColor="rgba(6,182,212,0.15)" className="h-[500px]">
+    <GlassCard delay={0} glowColor="rgba(6,182,212,0.15)" className="h-[420px]">
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-4 pb-2">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center"
             style={{ background: "rgba(6,182,212,0.15)", border: "1px solid rgba(6,182,212,0.25)" }}>
-            <Navigation size={15} className="text-cyan-400" />
+            <Navigation size={15} className="text-[#5373a5]" />
           </div>
           <div>
-            <h2 className="text-white font-bold text-base leading-tight" style={{ fontFamily: "Rajdhani, sans-serif", letterSpacing: "0.5px" }}>
+            <h2 className="text-[#2f2a24] font-bold text-base leading-tight" style={{ fontFamily: "Rajdhani, sans-serif", letterSpacing: "0.5px" }}>
               Live Emergency Map
             </h2>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-cyan-400 transition-colors"
+          <button className="w-8 h-8 rounded-xl flex items-center justify-center text-[#7d7468] hover:text-[#5373a5] transition-colors"
             style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
             <span className="text-lg font-bold leading-none mb-0.5">+</span>
           </button>
-          <button className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-cyan-400 transition-colors"
+          <button className="w-8 h-8 rounded-xl flex items-center justify-center text-[#7d7468] hover:text-[#5373a5] transition-colors"
             style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
             <span className="text-lg font-bold leading-none mb-0.5">−</span>
           </button>
@@ -149,11 +171,11 @@ function LiveMapCard() {
       </div>
 
       {/* Map body */}
-      <div className="relative mx-4 mb-4 rounded-2xl overflow-hidden" style={{ height: "360px" }}>
+      <div className="relative mx-4 mb-4 rounded-2xl overflow-hidden" style={{ height: "290px" }}>
         {/* Dark map background */}
         <svg width="100%" height="100%" viewBox="0 0 640 340" className="absolute inset-0">
           {/* dark bg */}
-          <rect width="640" height="340" fill="#040816" />
+          <rect width="640" height="340" fill="#d8cec1" />
           {/* grid */}
           {Array.from({ length: 14 }).map((_, i) => (
             <line key={`v${i}`} x1={i * 48} y1="0" x2={i * 48} y2="340" stroke="rgba(6,182,212,0.04)" strokeWidth="1" />
@@ -174,7 +196,7 @@ function LiveMapCard() {
             "M 0 90 L 640 80",
             "M 0 310 L 640 295",
           ].map((d, i) => (
-            <path key={i} d={d} stroke="rgba(30,58,95,0.7)" strokeWidth="6" fill="none" />
+            <path key={i} d={d} stroke="rgba(120,105,90,0.22)" strokeWidth="6" fill="none" />
           ))}
           {[
             "M 0 170 Q 200 160 320 180 Q 440 200 640 170",
@@ -182,7 +204,7 @@ function LiveMapCard() {
             "M 200 0 L 180 340",
             "M 400 0 L 420 340",
           ].map((d, i) => (
-            <path key={`r2-${i}`} d={d} stroke="rgba(15,40,80,0.9)" strokeWidth="3" fill="none" />
+            <path key={`r2-${i}`} d={d} stroke="rgba(120,105,90,0.15)" strokeWidth="3" fill="none" />
           ))}
 
           {/* Road labels */}
@@ -236,12 +258,12 @@ function LiveMapCard() {
 
           {/* Moving ambulance */}
           <g transform={`translate(${pathPoints.x - 14}, ${pathPoints.y - 9})`}>
-            <motion.rect width="28" height="18" rx="5" fill="#0f2040" stroke="#06b6d4" strokeWidth="1.5" />
+            <motion.rect width="28" height="18" rx="5" fill="#0f2040" stroke="#5373a5" strokeWidth="1.5" />
             <rect x="2" y="5" width="24" height="3" fill="#dc2626" />
             <text x="14" y="14" textAnchor="middle" fill="white" fontSize="6" fontWeight="bold">🚑</text>
             <motion.rect x="4" y="1" width="8" height="4" rx="2" fill="#dc2626"
               animate={{ opacity: [1, 0.2, 1] }} transition={{ duration: 0.5, repeat: Infinity }} />
-            <motion.rect x="16" y="1" width="8" height="4" rx="2" fill="#06b6d4"
+            <motion.rect x="16" y="1" width="8" height="4" rx="2" fill="#5373a5"
               animate={{ opacity: [0.2, 1, 0.2] }} transition={{ duration: 0.5, repeat: Infinity }} />
           </g>
 
@@ -253,24 +275,24 @@ function LiveMapCard() {
 
         {/* Legend overlay */}
         <div className="absolute bottom-3 left-3 rounded-xl p-3"
-          style={{ background: "rgba(5,11,23,0.88)", border: "1px solid rgba(30,58,95,0.7)", backdropFilter: "blur(8px)" }}>
+          style={{ background: "rgba(244,238,230,0.92)", border: "1px solid rgba(120,105,90,0.16)", backdropFilter: "blur(8px)" }}>
           <div className="flex flex-col gap-1.5">
             {[
               { color: "#3b82f6", label: "Your Location", shape: "circle" },
-              { color: "#06b6d4", label: "Ambulance", shape: "rect" },
+              { color: "#5373a5", label: "Ambulance", shape: "rect" },
               { color: "#dc2626", label: "Hospital", shape: "rect" },
             ].map(({ color, label }) => (
               <div key={label} className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: color }} />
-                <span className="text-slate-400 text-xs">{label}</span>
+                <span className="text-[#7d7468] text-xs">{label}</span>
               </div>
             ))}
             <div className="mt-1 pt-1 border-t border-slate-800">
-              <p className="text-slate-500 text-xs mb-1 font-semibold uppercase tracking-wide">Traffic</p>
+              <p className="text-[#6f6559] text-xs mb-1 font-semibold uppercase tracking-wide">Traffic</p>
               {trafficItems.map(({ color, label, dashed }) => (
                 <div key={label} className="flex items-center gap-2 mb-1">
                   <div className="w-6 h-1.5 rounded-full flex-shrink-0" style={{ background: dashed ? "transparent" : color, border: dashed ? `1.5px dashed ${color}` : "none" }} />
-                  <span className="text-slate-400 text-xs">{label}</span>
+                  <span className="text-[#7d7468] text-xs">{label}</span>
                 </div>
               ))}
             </div>
@@ -284,7 +306,7 @@ function LiveMapCard() {
           transition={{ delay: 0.4 }}
           className="absolute top-3 right-3 rounded-2xl p-4"
           style={{
-            background: "rgba(5,11,23,0.92)",
+            background: "rgba(244,238,230,0.95)",
             border: "1px solid rgba(34,197,94,0.35)",
             backdropFilter: "blur(12px)",
             width: "190px",
@@ -297,19 +319,19 @@ function LiveMapCard() {
               transition={{ duration: 1.2, repeat: Infinity }} />
             <span className="text-emerald-400 text-xs font-bold tracking-wide">Active Emergency</span>
           </div>
-          <p className="text-slate-400 text-xs mb-1">Ambulance is on the way</p>
-          <p className="text-white text-3xl font-black mb-0.5" style={{ fontFamily: "Rajdhani, sans-serif" }}>6 mins</p>
-          <p className="text-slate-500 text-xs mb-3">Estimated Arrival Time</p>
+          <p className="text-[#7d7468] text-xs mb-1">Ambulance is on the way</p>
+          <p className="text-[#2f2a24] text-3xl font-black mb-0.5" style={{ fontFamily: "Rajdhani, sans-serif" }}>6 mins</p>
+          <p className="text-[#6f6559] text-xs mb-3">Estimated Arrival Time</p>
 
           <div className="border-t border-slate-800 pt-3">
-            <p className="text-slate-500 text-xs mb-1">Patient</p>
-            <p className="text-white text-sm font-bold">Rohan Verma, 24 M</p>
+            <p className="text-[#6f6559] text-xs mb-1">Patient</p>
+            <p className="text-[#2f2a24] text-sm font-bold">Rohan Verma, 24 M</p>
           </div>
 
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            className="w-full mt-3 py-2 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold text-white"
+            className="w-full mt-3 py-2 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold text-[#2f2a24]"
             style={{ background: "rgba(6,182,212,0.15)", border: "1px solid rgba(6,182,212,0.3)" }}
           >
             View Details <ChevronRight size={11} />
@@ -317,7 +339,7 @@ function LiveMapCard() {
 
           <div className="mt-3 pt-2 border-t border-slate-800">
             <div className="flex items-center justify-between">
-              <span className="text-slate-500 text-xs">Green Corridor</span>
+              <span className="text-[#6f6559] text-xs">Green Corridor</span>
               <div className="flex items-center gap-1">
                 {[1, 2, 3].map((i) => (
                   <motion.div key={i} className="w-1 rounded-full bg-emerald-400"
@@ -328,7 +350,7 @@ function LiveMapCard() {
               </div>
             </div>
             <p className="text-emerald-400 text-xs font-bold">Active</p>
-            <p className="text-slate-500 text-xs">Traffic signals optimized ahead</p>
+            <p className="text-[#6f6559] text-xs">Traffic signals optimized ahead</p>
           </div>
         </motion.div>
       </div>
@@ -339,7 +361,7 @@ function LiveMapCard() {
 /* ─────────────────────────────────────────────────────────
    AI TRIAGE CARD
 ───────────────────────────────────────────── */
-function CircularProgress({ value, size = 90, strokeWidth = 7, color = "#06b6d4" }: {
+function CircularProgress({ value, size = 90, strokeWidth = 7, color = "#5373a5" }: {
   value: number; size?: number; strokeWidth?: number; color?: string;
 }) {
   const r = (size - strokeWidth) / 2;
@@ -365,7 +387,7 @@ function CircularProgress({ value, size = 90, strokeWidth = 7, color = "#06b6d4"
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <motion.span
-          className="text-xl font-black text-white"
+          className="text-xl font-black text-[#2f2a24]"
           style={{ fontFamily: "Rajdhani, sans-serif" }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -373,7 +395,7 @@ function CircularProgress({ value, size = 90, strokeWidth = 7, color = "#06b6d4"
         >
           {value}%
         </motion.span>
-        <span className="text-slate-500 text-xs">confidence</span>
+        <span className="text-[#6f6559] text-xs">confidence</span>
       </div>
     </div>
   );
@@ -387,7 +409,7 @@ function AITriageCard() {
   ];
 
   return (
-    <GlassCard delay={0.1} className="min-h-[420px]" glowColor="rgba(239,68,68,0.12)" borderColor="rgba(239,68,68,0.2)">
+    <GlassCard delay={0.1} className="min-h-[360px]" glowColor="rgba(239,68,68,0.12)" borderColor="rgba(239,68,68,0.2)">
       <div className="p-4 flex flex-col h-full">
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
@@ -401,10 +423,10 @@ function AITriageCard() {
               <Brain size={18} className="text-red-400" />
             </motion.div>
             <div>
-              <h3 className="text-white font-bold text-sm" style={{ fontFamily: "Rajdhani, sans-serif", letterSpacing: "0.5px" }}>
+              <h3 className="text-[#2f2a24] font-bold text-sm" style={{ fontFamily: "Rajdhani, sans-serif", letterSpacing: "0.5px" }}>
                 AI Triage Assessment
               </h3>
-              <p className="text-slate-500 text-xs">Based on your symptoms</p>
+              <p className="text-[#6f6559] text-xs">Based on your symptoms</p>
             </div>
           </div>
           {/* High Priority Badge */}
@@ -429,7 +451,7 @@ function AITriageCard() {
             animate={{ top: ["0%", "100%", "0%"] }}
             transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
           />
-          <p className="text-slate-400 text-xs font-semibold uppercase tracking-[0.22em] mb-3">Symptoms Detected</p>
+          <p className="text-[#7d7468] text-xs font-semibold uppercase tracking-[0.22em] mb-3">Symptoms Detected</p>
           <div className="flex flex-wrap gap-2">
             {symptoms.map(({ label, color, border, text }) => (
               <motion.div
@@ -449,7 +471,7 @@ function AITriageCard() {
         {/* AI Confidence + Specialist */}
         <div className="flex items-center justify-between mb-5">
           <div>
-            <p className="text-slate-500 text-xs uppercase tracking-[0.22em] mb-2">Recommended Specialist</p>
+            <p className="text-[#6f6559] text-xs uppercase tracking-[0.22em] mb-2">Recommended Specialist</p>
             <div className="flex items-center gap-3">
               <motion.div
                 className="w-10 h-10 rounded-xl flex items-center justify-center"
@@ -457,17 +479,17 @@ function AITriageCard() {
                 animate={{ rotate: [0, 5, -5, 0] }}
                 transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
               >
-                <Heart size={18} className="text-cyan-400" />
+                <Heart size={18} className="text-[#5373a5]" />
               </motion.div>
               <div>
-                <p className="text-white font-bold text-sm">Cardiologist</p>
+                <p className="text-[#2f2a24] font-bold text-sm">Cardiologist</p>
                 <p className="text-emerald-400 text-xs">Available Now</p>
               </div>
             </div>
           </div>
           <div className="flex flex-col items-center gap-1">
-            <p className="text-slate-500 text-xs uppercase tracking-[0.22em] mb-1">AI Confidence</p>
-            <CircularProgress value={92} size={84} color="#06b6d4" />
+            <p className="text-[#6f6559] text-xs uppercase tracking-[0.22em] mb-1">AI Confidence</p>
+            <CircularProgress value={92} size={84} color="#5373a5" />
           </div>
         </div>
 
@@ -475,15 +497,15 @@ function AITriageCard() {
         <div className="grid grid-cols-3 gap-2 mt-4">
           {[
             { label: "Heart Rate", value: "118", unit: "bpm", color: "#ef4444", Icon: Activity },
-            { label: "SpO2", value: "94", unit: "%", color: "#06b6d4", Icon: Wind },
+            { label: "SpO2", value: "94", unit: "%", color: "#5373a5", Icon: Wind },
             { label: "BP", value: "148/92", unit: "mmHg", color: "#f97316", Icon: BarChart3 },
           ].map(({ label, value, unit, color, Icon }) => (
             <div key={label} className="rounded-2xl p-3 text-center"
-              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              style={{ background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.06)" }}>
               <Icon size={13} className="mx-auto mb-1" style={{ color }} />
-              <p className="text-white font-black text-base leading-tight" style={{ fontFamily: "Rajdhani, sans-serif", color }}>{value}</p>
-              <p className="text-slate-500 text-xs">{unit}</p>
-              <p className="text-slate-500 text-xs leading-tight mt-0.5">{label}</p>
+              <p className="text-[#2f2a24] font-black text-base leading-tight" style={{ fontFamily: "Rajdhani, sans-serif", color }}>{value}</p>
+              <p className="text-[#6f6559] text-xs">{unit}</p>
+              <p className="text-[#6f6559] text-xs leading-tight mt-0.5">{label}</p>
             </div>
           ))}
         </div>
@@ -499,7 +521,7 @@ function Avatar({ initials, color, size = 56 }: { initials: string; color: strin
   return (
     <motion.div
       whileHover={{ scale: 1.08 }}
-      className="rounded-full flex items-center justify-center font-black text-white relative"
+      className="rounded-full flex items-center justify-center font-black text-[#2f2a24] relative"
       style={{
         width: size,
         height: size,
@@ -551,18 +573,18 @@ function PersonnelCard({
       onHoverEnd={() => setHovered(false)}
       className="rounded-2xl p-4"
       style={{
-        background: "rgba(255,255,255,0.03)",
-        border: hovered ? "1px solid rgba(6,182,212,0.3)" : "1px solid rgba(30,58,95,0.7)",
+        background: "rgba(255,255,255,0.18)",
+        border: hovered ? "1px solid rgba(6,182,212,0.3)" : "1px solid rgba(120,105,90,0.16)",
         boxShadow: hovered ? "0 0 20px rgba(6,182,212,0.1)" : "none",
         transition: "border 0.3s, box-shadow 0.3s",
       }}
     >
-      <p className="text-slate-500 text-xs uppercase tracking-[0.22em] mb-3 font-semibold">{role}</p>
+      <p className="text-[#6f6559] text-xs uppercase tracking-[0.22em] mb-3 font-semibold">{role}</p>
       <div className="flex items-center gap-3">
         <Avatar initials={initials} color={avatarColor} />
         <div className="flex-1">
-          <p className="text-white font-bold text-sm">{name}</p>
-          <p className="text-slate-400 text-xs mb-1">{specialty}</p>
+          <p className="text-[#2f2a24] font-bold text-sm">{name}</p>
+          <p className="text-[#7d7468] text-xs mb-1">{specialty}</p>
           <StarRating rating={rating} />
         </div>
         <motion.div
@@ -571,7 +593,7 @@ function PersonnelCard({
           animate={{ boxShadow: hovered ? "0 0 12px rgba(6,182,212,0.4)" : "none" }}
           transition={{ duration: 0.3 }}
         >
-          <Phone size={13} className="text-cyan-400" />
+          <Phone size={13} className="text-[#5373a5]" />
         </motion.div>
       </div>
     </motion.div>
@@ -580,18 +602,18 @@ function PersonnelCard({
 
 function DoctorNurseCard() {
   return (
-    <GlassCard delay={0.2} className="min-h-[420px]" glowColor="rgba(6,182,212,0.1)">
+    <GlassCard delay={0.2} className="min-h-[360px]" glowColor="rgba(6,182,212,0.1)">
       <div className="p-4 flex flex-col h-full">
         <div className="flex items-center gap-3 mb-5">
           <div className="w-10 h-10 rounded-2xl flex items-center justify-center"
             style={{ background: "rgba(6,182,212,0.12)", border: "1px solid rgba(6,182,212,0.25)" }}>
-            <Users size={18} className="text-cyan-400" />
+            <Users size={18} className="text-[#5373a5]" />
           </div>
           <div>
-            <h3 className="text-white font-bold text-sm" style={{ fontFamily: "Rajdhani, sans-serif", letterSpacing: "0.5px" }}>
+            <h3 className="text-[#2f2a24] font-bold text-sm" style={{ fontFamily: "Rajdhani, sans-serif", letterSpacing: "0.5px" }}>
               Doctor & Nurse Assignment
             </h3>
-            <p className="text-slate-500 text-xs">Emergency Response Team</p>
+            <p className="text-[#6f6559] text-xs">Emergency Response Team</p>
           </div>
         </div>
 
@@ -631,10 +653,10 @@ function DoctorNurseCard() {
 
         {/* ETA mini timeline */}
         <div className="mt-auto pt-3 border-t border-slate-800">
-          <p className="text-slate-500 text-xs uppercase tracking-[0.22em] mb-3 font-semibold">Response Timeline</p>
+          <p className="text-[#6f6559] text-xs uppercase tracking-[0.22em] mb-3 font-semibold">Response Timeline</p>
           <div className="relative">
             <div className="absolute left-3 top-0 bottom-0 w-0.5 rounded-full"
-              style={{ background: "linear-gradient(180deg, #06b6d4, #22c55e)" }} />
+              style={{ background: "linear-gradient(180deg, #5373a5, #22c55e)" }} />
             {[
               { label: "Emergency Reported", time: "08:21", done: true },
               { label: "Team Dispatched", time: "08:23", done: true },
@@ -644,13 +666,13 @@ function DoctorNurseCard() {
                 <div className="absolute left-1.5 w-3 h-3 rounded-full border-2 flex items-center justify-center"
                   style={{
                     background: done ? "#22c55e" : "rgba(6,182,212,0.2)",
-                    borderColor: done ? "#22c55e" : "#06b6d4",
+                    borderColor: done ? "#22c55e" : "#5373a5",
                     boxShadow: done ? "0 0 8px rgba(34,197,94,0.6)" : "0 0 8px rgba(6,182,212,0.4)",
                   }} />
                 <div className="flex-1">
-                  <p className={`text-xs font-semibold ${done ? "text-white" : "text-cyan-400"}`}>{label}</p>
+                  <p className={`text-xs font-semibold ${done ? "text-[#2f2a24]" : "text-[#5373a5]"}`}>{label}</p>
                 </div>
-                <span className="text-slate-500 text-xs">{time}</span>
+                <span className="text-[#6f6559] text-xs">{time}</span>
               </div>
             ))}
           </div>
@@ -665,11 +687,11 @@ function DoctorNurseCard() {
 ───────────────────────────────────────────── */
 const analyticsData = [
   { label: "Total Emergencies", value: "1,248", unit: "Today", icon: AlertTriangle, color: "#ef4444", trend: "+12%", iconBg: "rgba(239,68,68,0.12)", border: "rgba(239,68,68,0.2)" },
-  { label: "Response Time", value: "08:24", unit: "Avg. Time", icon: Clock, color: "#06b6d4", trend: "-0:42", iconBg: "rgba(6,182,212,0.12)", border: "rgba(6,182,212,0.2)" },
+  { label: "Response Time", value: "08:24", unit: "Avg. Time", icon: Clock, color: "#5373a5", trend: "-0:42", iconBg: "rgba(6,182,212,0.12)", border: "rgba(6,182,212,0.2)" },
   { label: "Ambulances Active", value: "32", unit: "On Duty", icon: Zap, color: "#22c55e", trend: "+4", iconBg: "rgba(34,197,94,0.12)", border: "rgba(34,197,94,0.2)" },
   { label: "Hospitals Online", value: "98", unit: "Connected", icon: Building2, color: "#a78bfa", trend: "100%", iconBg: "rgba(167,139,250,0.12)", border: "rgba(167,139,250,0.2)" },
   { label: "Lives Saved", value: "12,540", unit: "This Month", icon: Heart, color: "#f43f5e", trend: "+284", iconBg: "rgba(244,63,94,0.12)", border: "rgba(244,63,94,0.2)" },
-  { label: "Success Rate", value: "96.8%", unit: "This Month", icon: TrendingUp, color: "#06b6d4", trend: "+2.1%", iconBg: "rgba(6,182,212,0.12)", border: "rgba(6,182,212,0.2)" },
+  { label: "Success Rate", value: "96.8%", unit: "This Month", icon: TrendingUp, color: "#5373a5", trend: "+2.1%", iconBg: "rgba(6,182,212,0.12)", border: "rgba(6,182,212,0.2)" },
 ];
 
 function AnalyticsCard({ label, value, unit, icon: Icon, color, trend, iconBg, border, delay }: {
@@ -683,13 +705,14 @@ function AnalyticsCard({ label, value, unit, icon: Icon, color, trend, iconBg, b
       whileHover={{ y: -4, scale: 1.02 }}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
-      className="relative rounded-3xl p-4 overflow-hidden cursor-pointer min-h-[145px]"
+      className="relative rounded-3xl p-4 overflow-hidden cursor-pointer min-h-[115px]"
       style={{
-        background: "linear-gradient(145deg, rgba(10,20,46,0.97) 0%, rgba(5,11,23,0.99) 100%)",
+        background:
+  "linear-gradient(145deg, rgba(244,238,230,0.95) 0%, rgba(226,216,203,0.98) 100%)",
         border: `1px solid ${hovered ? color + "55" : border}`,
         boxShadow: hovered
           ? `0 0 32px ${color}22, 0 12px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)`
-          : `0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.03)`,
+          : `0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18)`,
         transition: "border 0.3s, box-shadow 0.3s",
       }}
     >
@@ -717,13 +740,13 @@ function AnalyticsCard({ label, value, unit, icon: Icon, color, trend, iconBg, b
         </div>
 
         <motion.p
-          className="text-2xl font-black text-white mb-0.5"
-          style={{ fontFamily: "Rajdhani, sans-serif", color: hovered ? color : "white", transition: "color 0.3s" }}
+          className="text-2xl font-black text-[#2f2a24] mb-0.5"
+          style={{ fontFamily: "Rajdhani, sans-serif", color: hovered ? color : "#2f2a24", transition: "color 0.3s" }}
         >
           {value}
         </motion.p>
-        <p className="text-slate-500 text-xs mb-0.5">{unit}</p>
-        <p className="text-slate-400 text-xs font-medium">{label}</p>
+        <p className="text-[#6f6559] text-xs mb-0.5">{unit}</p>
+        <p className="text-[#7d7468] text-xs font-medium">{label}</p>
 
         {/* subtle bar */}
         <div className="mt-3 h-0.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
@@ -755,10 +778,10 @@ function QuickServicesCard() {
     <GlassCard delay={0.15} glowColor="rgba(6,182,212,0.08)">
       <div className="p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-white font-bold text-sm" style={{ fontFamily: "Rajdhani, sans-serif" }}>
+          <h3 className="text-[#2f2a24] font-bold text-sm" style={{ fontFamily: "Rajdhani, sans-serif" }}>
             Quick Services
             </h3>
-          <Zap size={14} className="text-cyan-400" />
+          <Zap size={14} className="text-[#5373a5]" />
         </div>
         <div className="grid grid-cols-4 gap-2">
           {services.map(({ label, color, bg, Icon }) => (
@@ -773,7 +796,7 @@ function QuickServicesCard() {
                 style={{ background: `${color}22` }}>
                 <Icon size={18} color={color} />
               </div>
-              <span className="text-xs text-slate-300 text-center leading-tight font-medium" style={{ fontSize: "9px" }}>{label}</span>
+              <span className="text-xs text-[#4B5563] text-center leading-tight font-medium" style={{ fontSize: "9px" }}>{label}</span>
             </motion.button>
           ))}
         </div>
@@ -821,10 +844,10 @@ function RecentAlertsCard() {
     <GlassCard delay={0.25} glowColor="rgba(239,68,68,0.08)" borderColor="rgba(239,68,68,0.15)">
       <div className="p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-white font-bold text-sm" style={{ fontFamily: "Rajdhani, sans-serif" }}>
+          <h3 className="text-[#2f2a24] font-bold text-sm" style={{ fontFamily: "Rajdhani, sans-serif" }}>
             Recent Alerts
             </h3>
-          <button className="text-cyan-400 text-xs font-semibold flex items-center gap-0.5 hover:text-cyan-300 transition-colors">
+          <button className="text-[#5373a5] text-xs font-semibold flex items-center gap-0.5 hover:text-[#6d86ad] transition-colors">
             View All <ChevronRight size={12} />
           </button>
         </div>
@@ -843,8 +866,8 @@ function RecentAlertsCard() {
                 <Icon size={14} style={{ color }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white text-xs font-semibold truncate">{label}</p>
-                <p className="text-slate-500 text-xs truncate">{sub}</p>
+                <p className="text-[#2f2a24] text-xs font-semibold truncate">{label}</p>
+                <p className="text-[#6f6559] text-xs truncate">{sub}</p>
               </div>
               <span className="text-slate-600 text-xs whitespace-nowrap flex-shrink-0">{time}</span>
             </motion.div>
@@ -861,46 +884,101 @@ function RecentAlertsCard() {
 export default function EmergencyCommandCenter() {
   return (
     <section
-  className="w-full pt-2 space-y-6"
-      style={{ background: "transparent" }}
+  className="relative overflow-hidden w-full px-0 md:px-0 space-y-5"
+
+      style={{
+        background: "transparent",
+      }}
     >
-      {/* Section label */}
+      {/* premium overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(rgba(255,255,255,0.04), rgba(0,0,0,0.02))",
+        }}
+      />
+
+      {/* ambient glow */}
+      <div
+        className="absolute -top-40 -right-40 w-[420px] h-[420px] rounded-full blur-3xl opacity-30"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(83,115,165,0.22), transparent 70%)",
+        }}
+      />
+
+      <div
+        className="absolute bottom-0 left-0 w-[320px] h-[320px] rounded-full blur-3xl opacity-20"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(255,255,255,0.35), transparent 70%)",
+        }}
+      />
+
+      {/* Section Header */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex items-center gap-3 mb-4 px-1"
+        className="relative z-10 flex items-center gap-3 mb-4 px-1"
       >
         <div className="flex items-center gap-2">
           <motion.div
-            className="w-2 h-2 rounded-full bg-cyan-400"
+            className="w-2 h-2 rounded-full"
+            style={{ background: "#5373a5" }}
             animate={{ opacity: [1, 0.4, 1] }}
             transition={{ duration: 1.4, repeat: Infinity }}
           />
-          <span className="text-cyan-400 text-xs font-black uppercase tracking-[0.22em]">Live Emergency Command Center</span>
+
+          <span
+            className="text-xs font-black uppercase tracking-[0.22em]"
+            style={{ color: "#3b4d68" }}
+          >
+            Live Emergency Command Center
+          </span>
         </div>
-        <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, rgba(6,182,212,0.4), transparent)" }} />
+
+        <div
+          className="flex-1 h-px"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(83,115,165,0.45), transparent)",
+          }}
+        />
       </motion.div>
 
-      {/* Main 3-column grid */}
-      <div className="space-y-4">
+      {/* Analytics */}
+      <div className="relative z-10 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mt-4">
+        {analyticsData.map((item, i) => (
+          <AnalyticsCard
+            key={item.label}
+            {...item}
+            delay={0.35 + i * 0.07}
+          />
 
-  {/* FULL WIDTH MAP */}
-  <LiveMapCard />
+        ))}
+      {/* Main Grid */}
+      <div className="relative z-10 space-y-4">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
 
-  {/* BELOW MAP */}
-  <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 items-stretch">
-    <AITriageCard />
-    <DoctorNurseCard />
+  <div className="xl:col-span-8">
+    <LiveMapCard />
+  </div>
+
+  <div className="xl:col-span-4 flex flex-col gap-4">
+    <QuickServicesCard />
+    <RecentAlertsCard />
   </div>
 
 </div>
 
-      {/* Bottom analytics row */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mt-4">
-        {analyticsData.map((item, i) => (
-          <AnalyticsCard key={item.label} {...item} delay={0.35 + i * 0.07} />
-        ))}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 items-stretch">
+          <AITriageCard />
+          <DoctorNurseCard />
+        </div>
+      </div>
+      
       </div>
     </section>
   );

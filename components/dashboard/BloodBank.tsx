@@ -2,13 +2,13 @@
 
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { Droplets, ChevronRight, AlertCircle } from "lucide-react";
+import { Droplets } from "lucide-react";
 
 /* ─────────────────────────────────────────
    BLOOD BANK COMPONENT
 ───────────────────────────────────────── */
 export default function BloodBank() {
-  const [hovered, setHovered] = useState(false);
+  const [hovered, setHovered] = useState<boolean>(false);
 
   return (
     <motion.div
