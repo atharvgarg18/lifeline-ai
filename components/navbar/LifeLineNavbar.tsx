@@ -6,9 +6,15 @@ import {
   Menu, X, Search, Bell, Globe, ChevronDown,
   LayoutDashboard, AlertCircle, MapPin, Building2, Truck,
   Stethoscope, Bot, ClipboardList, Droplets, Pill,
- BarChart3, Settings, HelpCircle,
-  Phone, Activity, ChevronRight, User, MessageCircle,
+  BarChart3, Settings, HelpCircle, Calendar,
+  Phone, Activity, ChevronRight, User, MessageCircle, LogOut,
 } from "lucide-react";
+<<<<<<< HEAD
+=======
+
+import HeroDashboard from "../dashboard/HeroDashboard";
+import { useAuth } from "@/context/AuthContext";
+>>>>>>> 95808d93ec68b65ea942c3dd0d01b1cd2674788e
 
 /* ─────────────────────────────────────────────────────────────────────────────
    DESIGN TOKENS  (exact colours from the reference image)
@@ -39,21 +45,24 @@ interface NavItem {
    NAV DATA
 ───────────────────────────────────────────────────────────────────────────── */
 const NAV_ITEMS: NavItem[] = [
-  { label: "Dashboard",        icon: <LayoutDashboard      size={17} /> },
-  { label: "Emergency SOS",    icon: <AlertCircle          size={17} />, badge: "SOS" },
-  { label: "Live Tracking",    icon: <MapPin               size={17} /> },
-  { label: "Hospitals",        icon: <Building2            size={17} />, hasSubmenu: true },
-  { label: "Ambulances",       icon: <Truck                size={17} />, hasSubmenu: true },
-  { label: "Doctors & Nurses", icon: <Stethoscope          size={17} /> },
-  { label: "AI Assistant",     icon: <Bot                  size={17} />, badge: "AI" },
-  { label: "Patient History",  icon: <ClipboardList        size={17} /> },
-  { label: "Blood Bank",       icon: <Droplets             size={17} /> },
-  { label: "Pharmacy",         icon: <Pill                 size={17} /> },
-  { label: "Complaints",       icon: <MessageCircle size={17} /> },
-  { label: "Analytics",        icon: <BarChart3            size={17} /> },
-  { label: "Settings",         icon: <Settings             size={17} /> },
-  { label: "Help & Support",   icon: <HelpCircle           size={17} /> },
+  { label: "Dashboard",        icon: <LayoutDashboard      size={17} />, href: "/patient/dashboard" },
+  { label: "Emergency SOS",    icon: <AlertCircle          size={17} />, badge: "SOS", href: "/emergency" },
+  { label: "Live Tracking",    icon: <MapPin               size={17} />, href: "/tracking" },
+  { label: "Hospitals",        icon: <Building2            size={17} />, hasSubmenu: true, href: "/hospitals" },
+  { label: "Ambulances",       icon: <Truck                size={17} />, hasSubmenu: true, href: "/ambulances" },
+  { label: "Find Doctor",      icon: <Stethoscope          size={17} />, href: "/patient/find-doctor" },
+  { label: "AI Assistant",     icon: <Bot                  size={17} />, badge: "AI", href: "/ai" },
+  { label: "Patient History",  icon: <ClipboardList        size={17} />, href: "/patient/history" },
+  { label: "Appointments",     icon: <Calendar             size={17} />, href: "/patient/appointments" },
+  { label: "Analytics",        icon: <BarChart3            size={17} />, href: "/patient/analytics" },
+  { label: "Blood Bank",       icon: <Droplets             size={17} />, href: "/blood-bank" },
+  { label: "Pharmacy",         icon: <Pill                 size={17} />, href: "/pharmacy" },
+  { label: "Complaints",       icon: <MessageCircle size={17} />, href: "/complaints" },
+  { label: "Settings",         icon: <Settings             size={17} />, href: "/settings" },
+  { label: "Help & Support",   icon: <HelpCircle           size={17} />, href: "/help" },
 ];
+
+
 
 const LANGUAGES = ["English", "हिन्दी", "বাংলা", "తెలుగు", "मराठी"];
 
@@ -482,6 +491,38 @@ function UserProfile() {
 /* ─────────────────────────────────────────────────────────────────────────────
    ROOT
 ───────────────────────────────────────────────────────────────────────────── */
+/* ─── User Profile Block ───────────────────────────────────────────────────── */
+function UserProfileBlock() {
+  const { user, logout } = useAuth();
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative hidden sm:flex items-center gap-3 pl-4"
+         style={{ borderLeft: "1px solid rgba(255,255,255,.06)" }}>
+      <div className="text-right">
+        <p className="text-[13px] font-bold text-white">{user?.name || "Guest"}</p>
+        <p className="text-[11px] font-medium" style={{ color: "#22d3ee" }}>{user?.role || "PATIENT"}</p>
+      </div>
+      <div className="relative cursor-pointer" onClick={() => setOpen(v => !v)}>
+        <div className="h-10 w-10 rounded-full flex items-center justify-center"
+             style={{ background: "linear-gradient(135deg,#00d9ff,#2563eb)", border: "2px solid rgba(34,211,238,.4)", boxShadow: "0 0 20px rgba(34,211,238,.25)" }}>
+          <User size={16} className="text-white" />
+        </div>
+        <span className="absolute bottom-0 right-0 h-[10px] w-[10px] rounded-full bg-green-400"
+              style={{ border: "2px solid #071018" }} />
+      </div>
+      {open && (
+        <div className="absolute right-0 top-14 w-44 rounded-2xl overflow-hidden z-50"
+             style={{ background: "#0a1428", border: "1px solid rgba(255,255,255,.1)", boxShadow: "0 16px 40px rgba(0,0,0,.7)" }}>
+          <button onClick={logout}
+            className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-colors">
+            <LogOut size={14} /> Sign Out
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function LifelineNavbar({
   children,
 }: {
@@ -644,49 +685,7 @@ border: "1px solid #E2E8F0",
           </button>
 
           {/* PROFILE */}
-          <div
-            className="hidden sm:flex items-center gap-3 pl-4"
-            style={{
-              borderLeft:
-                "1px solid rgba(255,255,255,.06)",
-            }}
-          >
-            <div className="text-right">
-              <p className="text-[13px] font-bold text-white">
-                Rohan Verma
-              </p>
-
-              <p
-                className="text-[11px] font-medium"
-                style={{ color: "#22d3ee" }}
-              >
-                View Profile
-              </p>
-            </div>
-
-            <div className="relative">
-              <div
-                className="h-10 w-10 rounded-full flex items-center justify-center"
-                style={{
-                  background:
-"linear-gradient(135deg,#00d9ff,#2563eb)",
-                  border:
-                    "2px solid rgba(34,211,238,.4)",
-                  boxShadow:
-                    "0 0 20px rgba(34,211,238,.25)",
-                }}
-              >
-                <User size={16} className="text-white" />
-              </div>
-
-              <span
-                className="absolute bottom-0 right-0 h-[10px] w-[10px] rounded-full bg-green-400"
-                style={{
-                  border: "2px solid #071018",
-                }}
-              />
-            </div>
-          </div>
+          <UserProfileBlock />
         </div>
       </header>
 
