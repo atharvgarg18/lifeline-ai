@@ -1,6 +1,6 @@
 'use client';
 
-import EmergencyCommandCenter from '../EmergencyCommandCenter';
+import EmergencyCommandCenter from '@/components/EmergencyCommandCenter';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import {
