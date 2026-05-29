@@ -9,12 +9,9 @@ import {
   BarChart3, Settings, HelpCircle, Calendar,
   Phone, Activity, ChevronRight, User, MessageCircle, LogOut,
 } from "lucide-react";
-<<<<<<< HEAD
-=======
 
-import HeroDashboard from "../dashboard/HeroDashboard";
 import { useAuth } from "@/context/AuthContext";
->>>>>>> 95808d93ec68b65ea942c3dd0d01b1cd2674788e
+
 
 /* ─────────────────────────────────────────────────────────────────────────────
    DESIGN TOKENS  (exact colours from the reference image)

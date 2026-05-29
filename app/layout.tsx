@@ -1,24 +1,4 @@
-<<<<<<< HEAD
 import "@/styles/globals.css";
-import LifeLineNavbar from "@/components/navbar/LifeLineNavbar";
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html lang="en">
-      <body>
-        <LifeLineNavbar>
-          {children}
-        </LifeLineNavbar>
-      </body>
-    </html>
-  );
-}
-=======
-import "../styles/globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata = {
@@ -35,4 +15,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
->>>>>>> 95808d93ec68b65ea942c3dd0d01b1cd2674788e
