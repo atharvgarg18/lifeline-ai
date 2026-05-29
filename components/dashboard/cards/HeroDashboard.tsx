@@ -17,10 +17,9 @@ import {
   AlertCircle,
   Zap,
 } from 'lucide-react';
-import HealthMonitoringSection from './HealthMonitoringSection';
-import RecentAlerts from './cards/RecentAlerts';
-import HealthAnalytics from './cards/HealthAnalytics';
-import NearbyHospitals from './cards/NearbyHospitals';
+import HealthMonitoringSection from '../HealthMonitoringSection';
+import RecentAlerts from './RecentAlerts';
+import NearbyHospitals from './NearbyHospitals';
 
 /* ─────────────────────────────────────────────
    Tiny helpers
