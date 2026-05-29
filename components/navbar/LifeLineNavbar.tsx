@@ -500,14 +500,15 @@ export default function LifelineNavbar({
   <div
     className="flex min-h-screen font-sans overflow-hidden"
     style={{
-  background: "#ECE7DF"
+  background:
+"linear-gradient(180deg,#F8FAFC 0%,#EFF6FF 100%)"
 }}
   >
     {/* SIDEBAR */}
     <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
 
     {/* MAIN CONTENT */}
-    <div className="flex-1 flex flex-col min-w-0 relative lg:ml-[270px]">
+    <div className="flex-1 flex flex-col min-w-0 relative lg:ml-[270px] overflow-x-hidden">
       
       {/* subtle ambient glow */}
       <div className="absolute top-0 left-0 w-full h-[400px] pointer-events-none overflow-hidden">
@@ -538,11 +539,12 @@ export default function LifelineNavbar({
 
 {/* HEADER */}
 <header
-        className="sticky top-0 z-30 flex items-center gap-3 px-4 md:px-6 h-[68px]"
+  className="sticky top-0 z-30 flex items-center gap-3 px-6 py-4 bg-white border-b border-blue-100"
         style={{
-          background:"#FFFFFF",
+          background:"#081426",
+borderBottom:"1px solid rgba(255,255,255,0.06)",
           backdropFilter: "blur(18px) saturate(180%)",
-          borderBottom:"1px solid #E5E7EB",
+      
           boxShadow: "0 10px 40px rgba(0,0,0,.35)",
         }}
       >
@@ -598,7 +600,7 @@ border: "1px solid #E2E8F0",
               type="text"
               placeholder="Search hospitals, services, doctors..."
               className="flex-1 bg-transparent outline-none text-sm placeholder:text-gray-600"
-              style={{ color: "#f9fafb" }}
+              style={{ color: "#0F172A" }}
             />
           </div>
         </div>
@@ -690,50 +692,12 @@ border: "1px solid #E2E8F0",
 
       {/* MAIN PREVIEW */}
 
-     <div className="relative z-10 flex-1 overflow-y-auto p-4">
+     <div className="relative z-10 flex-1 overflow-y-auto px-6 py-4 w-full">
   {children}
 </div>
 
       {/* /<main className="flex-1 flex items-center justify-center rel
       ative z-10"> *}
-        <div className="text-center">
-          
-          <div
-            className="inline-flex items-center gap-2 px-5 py-2 rounded-full mb-6"
-            style={{
-              background: "rgba(34,211,238,.08)",
-              border: "1px solid rgba(34,211,238,.18)",
-              color: "#19d3ff",
-            }}
-          >
-            <div className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-sm font-semibold">
-              LifeLine AI Dashboard Active
-            </span>
-          </div>
-
-          <h1 className="text-5xl md:text-7xl font-black tracking-tight text-white">
-            Emergency
-            <span
-              style={{
-                color: "#22d3ee",
-                textShadow:
-"0 0 22px rgba(0,217,255,.18)",
-              }}
-            >
-              {" "}
-              Intelligence
-            </span>
-          </h1>
-
-          <p
-            className="mt-6 text-lg max-w-2xl mx-auto leading-relaxed"
-            style={{ color: "#7b8798" }}
-          >
-            AI-powered emergency healthcare coordination platform
-            with futuristic real-time response systems.
-          </p>
-        </div>
       {/* </main> */}
     </div>
   </div>

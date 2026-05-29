@@ -20,14 +20,10 @@ export default function BloodBank() {
       whileHover={{ y: -3 }}
       className="relative rounded-3xl overflow-hidden"
       style={{
-        background:
-          "linear-gradient(145deg, rgba(10,20,46,0.97) 0%, rgba(5,11,23,0.99) 100%)",
-        border: `1px solid ${
-          hovered ? "rgba(239,68,68,0.40)" : "rgba(30,58,95,0.85)"
-        }`,
-        boxShadow: hovered
-          ? "0 0 40px rgba(239,68,68,0.14), 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)"
-          : "0 6px 28px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.03)",
+        background: "#ffffff",
+border: "1px solid #e5edf8",
+boxShadow: "0 8px 24px rgba(15,23,42,0.06)",
+        
         transition: "border 0.3s, box-shadow 0.3s",
       }}
     >
@@ -44,14 +40,12 @@ export default function BloodBank() {
 
       {/* Ambient radial glow */}
       <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse at 90% 10%, rgba(239,68,68,0.09) 0%, transparent 55%)",
-          opacity: hovered ? 1 : 0.5,
-          transition: "opacity 0.4s",
-        }}
-      />
+  className="absolute inset-0 pointer-events-none"
+  style={{
+    background:
+      "radial-gradient(circle at top right, rgba(37,99,235,.05), transparent 45%)",
+  }}
+/>
 
       <div className="relative z-10 p-5">
         {/* ── Header ── */}
@@ -60,22 +54,20 @@ export default function BloodBank() {
             <motion.div
               className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
               style={{
-                background: "rgba(239,68,68,0.15)",
-                border: "1px solid rgba(239,68,68,0.35)",
+                background: "#fff1f2",
+border: "1px solid #fecdd3",
               }}
               animate={{
-                boxShadow: [
-                  "0 0 0px rgba(239,68,68,0.25)",
-                  "0 0 14px rgba(239,68,68,0.55)",
-                  "0 0 0px rgba(239,68,68,0.25)",
-                ],
+                boxShadow: hovered
+  ? "0 8px 24px rgba(37,99,235,.12)"
+  : "0 4px 12px rgba(15,23,42,.05)",
               }}
               transition={{ duration: 2, repeat: Infinity }}
             >
               <Droplets size={14} className="text-red-400" />
             </motion.div>
             <span
-              className="text-white font-bold text-sm"
+              className="text-slate-800 font-bold text-sm"
               style={{ fontFamily: "Rajdhani, sans-serif", letterSpacing: "0.4px" }}
             >
               Blood Bank
@@ -129,7 +121,7 @@ export default function BloodBank() {
             animate={{ opacity: [1, 0.3, 1] }}
             transition={{ duration: 0.9, repeat: Infinity }}
           />
-          <span className="text-red-400 text-xs font-black tracking-wide">
+          <span className="text-rose-500 text-xs font-black tracking-wide">
             O+ Donors Needed
           </span>
         </div>
@@ -140,21 +132,20 @@ export default function BloodBank() {
         {/* ── Progress bar 12/25 ── */}
         <div className="mb-1 flex items-center justify-between">
           <span
-            className="text-white font-black text-base"
-            style={{ fontFamily: "Rajdhani, sans-serif" }}
-          >
-            12 / 25
-          </span>
-          <span className="text-slate-500 text-xs">donors</span>
+  className="text-slate-800 font-black text-base"
+>
+  12 / 25
+</span>
+          <span className="text-slate-600 text-xs">donors</span>
         </div>
         <div
           className="w-full h-2 rounded-full mb-4 overflow-hidden"
-          style={{ background: "rgba(255,255,255,0.07)" }}
+          style={{ background: "#e2e8f0"}}
         >
           <motion.div
             className="h-full rounded-full"
             style={{
-              background: "linear-gradient(90deg,#ef4444,#dc2626)",
+              background: "linear-gradient(90deg,#2563eb,#3b82f6)",
               boxShadow: "0 0 8px rgba(239,68,68,0.7)",
             }}
             initial={{ width: "0%" }}
@@ -172,10 +163,10 @@ export default function BloodBank() {
           whileTap={{ scale: 0.97 }}
           className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm text-white relative overflow-hidden"
           style={{
-            background: "linear-gradient(135deg,#dc2626 0%,#991b1b 100%)",
-            border: "1px solid rgba(255,100,100,0.3)",
-            boxShadow: "0 0 16px rgba(239,68,68,0.3)",
-          }}
+ background: "linear-gradient(135deg,#1D8BFF,#2563EB)",
+  border: "1px solid #bfdbfe",
+  boxShadow: "0 8px 20px rgba(37,99,235,.2)",
+}}
         >
           {/* shimmer */}
           <div
