@@ -412,6 +412,47 @@ export const MESSAGES = {
 // Export all constants
 // ============================================
 
+export const APPOINTMENT_STATUS = {
+  SCHEDULED: 'SCHEDULED',
+  CONFIRMED: 'CONFIRMED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+  NO_SHOW: 'NO_SHOW',
+} as const;
+
+export const APPOINTMENT_TYPES = {
+  IN_PERSON: 'IN_PERSON',
+  VIDEO_CALL: 'VIDEO_CALL',
+  PHONE: 'PHONE',
+} as const;
+
+export const APPOINTMENT_DURATION_MINUTES = 30; // Default appointment duration
+
+// Doctor recommendation scoring weights (must sum to 1.0)
+export const RECOMMENDATION_WEIGHTS = {
+  RATING: 0.30,       // Doctor quality
+  PROXIMITY: 0.25,    // Distance from patient
+  SPEED: 0.20,        // Average response time
+  AVAILABILITY: 0.15, // Currently available
+  FAMILIARITY: 0.10,  // Has treated patient before
+} as const;
+
+export const VIDEO_CALL_PROVIDERS = {
+  DAILY: 'daily',
+  JITSI: 'jitsi',
+} as const;
+
+export const VIDEO_CALL_EXPIRY_HOURS = 2; // Room expires 2h after appointment
+
+export const QR_CODE_EXPIRY_HOURS = 24;
+
+export const PATIENT_ANALYTICS_RANGE_MONTHS = 12; // Default: last 12 months
+
+// ============================================
+// Export all constants
+// ============================================
+
 export default {
   API_VERSION,
   API_BASE_PATH,
@@ -420,5 +461,9 @@ export default {
   USER_TYPES,
   EMERGENCY_STATUS,
   AMBULANCE_STATUS,
+  APPOINTMENT_STATUS,
+  APPOINTMENT_TYPES,
+  RECOMMENDATION_WEIGHTS,
   // ... other exports
 };
+

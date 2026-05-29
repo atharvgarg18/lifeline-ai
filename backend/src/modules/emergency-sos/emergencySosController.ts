@@ -7,7 +7,8 @@
 import type { Request, Response, NextFunction } from 'express';
 import { emergencySosService } from './emergencySosService';
 import { validateRequest } from '@middleware/validation';
-import type { EmergencySOS, TriggerSOSRequest } from '../../../shared/types';
+import type { EmergencySOS, TriggerSOSRequest } from '@shared/types';
+
 
 export class EmergencySosController {
   /**

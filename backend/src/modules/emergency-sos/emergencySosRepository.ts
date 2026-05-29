@@ -4,7 +4,8 @@
  * Abstracts MongoDB operations
  */
 
-import type { EmergencySOS, TimelineEntry } from '../../../shared/types';
+import type { EmergencySOS, TimelineEntry } from '@shared/types';
+
 
 // Placeholder - In real implementation, this would use mongoose
 interface IEmergencySosRepository {
