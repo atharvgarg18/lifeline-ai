@@ -81,7 +81,7 @@ function HospitalRow({
 
       {/* Name */}
       <p
-        className="flex-1 text-white text-xs font-semibold truncate"
+        className="flex-1 text-slate-800 text-xs font-semibold truncate"
         style={{ fontFamily: "Rajdhani, sans-serif" }}
       >
         {hospital.name}
@@ -120,14 +120,9 @@ export default function NearbyHospitals() {
       whileHover={{ y: -3 }}
       className="relative rounded-3xl overflow-hidden"
       style={{
-        background:
-          "linear-gradient(145deg, rgba(10,20,46,0.97) 0%, rgba(5,11,23,0.99) 100%)",
-        border: `1px solid ${
-          hovered ? "rgba(6,182,212,0.38)" : "rgba(30,58,95,0.85)"
-        }`,
-        boxShadow: hovered
-          ? "0 0 40px rgba(6,182,212,0.13), 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)"
-          : "0 6px 28px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.03)",
+        background:"#FFFFFF",
+border:"1px solid #DBEAFE",
+boxShadow:"0 4px 24px rgba(37,99,235,.08)",
         transition: "border 0.3s, box-shadow 0.3s",
       }}
     >
@@ -175,7 +170,7 @@ export default function NearbyHospitals() {
               <Building2 size={14} className="text-cyan-400" />
             </motion.div>
             <span
-              className="text-white font-bold text-sm"
+              className="text-slate-800 font-bold text-sm"
               style={{
                 fontFamily: "Rajdhani, sans-serif",
                 letterSpacing: "0.4px",

@@ -630,7 +630,7 @@ function EmergencyTimeline() {
 /* ═══════════════════════════════════════════════
    MAIN EXPORT
 ═══════════════════════════════════════════════ */
-export default function DashboardMiddleSection() {
+export default function patientMiddleSection() {
   return (
     <div className="w-full bg-[#060d1a] p-4 font-sans">
       {/* 12-column responsive grid */}

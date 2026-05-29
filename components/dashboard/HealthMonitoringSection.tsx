@@ -51,12 +51,12 @@ function GlassCard({
       whileHover={{ y: -3 }}
       className={`relative rounded-3xl overflow-hidden ${className}`}
       style={{
-        background: "linear-gradient(145deg,rgba(10,20,46,0.97) 0%,rgba(5,11,23,0.99) 100%)",
-        border: `1px solid ${hovered ? border : "rgba(30,58,95,0.8)"}`,
-        boxShadow: hovered
-          ? `0 0 40px ${color}, 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)`
-          : `0 6px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.03)`,
-        transition: "border 0.3s, box-shadow 0.3s",
+background: "#ffffff",
+border: "1px solid #e2e8f0",
+backdropFilter: "blur(10px)",
+boxShadow: hovered
+  ? "0 10px 30px rgba(59,130,246,0.12)"
+  : "0 2px 10px rgba(15,23,42,0.06)",        transition: "border 0.3s, box-shadow 0.3s",
         ...style,
       }}
     >
@@ -73,7 +73,7 @@ function SectionLabel({ label }: { label: string }) {
       <div className="flex items-center gap-2">
         <motion.div className="w-2 h-2 rounded-full bg-cyan-400"
           animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 1.4, repeat: Infinity }} />
-        <span className="text-cyan-400 text-xs font-black uppercase tracking-widest">{label}</span>
+        <span className="text-blue-600 text-xs font-black uppercase tracking-widest">{label}</span>
       </div>
       <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg,rgba(6,182,212,0.4),transparent)" }} />
     </motion.div>
@@ -102,14 +102,14 @@ function VitalRow({ icon: Icon, label, value, unit, color, normal }: {
   icon: any; label: string; value: string; unit: string; color: string; normal?: boolean;
 }) {
   return (
-    <div className="flex items-center gap-3 py-2.5 border-b border-slate-800/50 last:border-0">
+    <div className="flex items-center gap-3 py-2.5 border-b border-slate-200 last:border-0">
       <div className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0"
         style={{ background: `${color}18`, border: `1px solid ${color}30` }}>
         <Icon size={13} style={{ color }} />
       </div>
-      <span className="text-slate-400 text-xs flex-1">{label}</span>
+      <span className="text-slate-700 text-xs flex-1">{label}</span>
       <span className="font-black text-sm" style={{ color, fontFamily: "Rajdhani, sans-serif" }}>{value}</span>
-      <span className="text-slate-500 text-xs w-10 text-right">{unit}</span>
+      <span className="text-slate-600 text-xs w-10 text-right">{unit}</span>
     </div>
   );
 }
@@ -173,14 +173,14 @@ function HealthMonitorCard() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-2xl flex items-center justify-center"
-              style={{ background: "rgba(6,182,212,0.15)", border: "1px solid rgba(6,182,212,0.3)" }}>
+              style={{ background: "#eff6ff", border: "1px solid #bfdbfe" }}>
               <Activity size={16} className="text-cyan-400" />
             </div>
             <div>
-              <h3 className="text-white font-bold text-sm" style={{ fontFamily: "Rajdhani, sans-serif", letterSpacing: "0.5px" }}>
+              <h3 className="text-slate-900 font-bold text-sm" style={{ fontFamily: "Rajdhani, sans-serif", letterSpacing: "0.5px" }}>
                 Real-time Health Monitor
               </h3>
-              <p className="text-slate-500 text-xs">Live Vitals</p>
+              <p className="text-slate-600 text-xs">Live Vitals</p>
             </div>
           </div>
           <motion.div className="w-2 h-2 rounded-full bg-emerald-400"
@@ -223,10 +223,10 @@ function MedicineReminderCard() {
               <Pill size={16} className="text-purple-400" />
             </div>
             <div>
-              <h3 className="text-white font-bold text-sm" style={{ fontFamily: "Rajdhani, sans-serif" }}>Medicine Reminder</h3>
+              <h3 className="text-slate-900 font-bold text-sm" style={{ fontFamily: "Rajdhani, sans-serif" }}>Medicine Reminder</h3>
             </div>
           </div>
-          <Bell size={14} className="text-slate-500" />
+          <Bell size={14} className="text-slate-600" />
         </div>
 
         <div className="flex items-center gap-2 mb-4">
@@ -267,15 +267,16 @@ function MedicineReminderCard() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 + i * 0.12 }}
               className="flex items-center gap-3 p-3 rounded-2xl"
-              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+              style={{ background: "#f8fafc",
+border: "1px solid #e2e8f0" }}
             >
               <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{ background: `${m.color}18`, border: `1px solid ${m.color}35` }}>
                 <Pill size={15} style={{ color: m.color }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white text-xs font-bold truncate">{m.name}</p>
-                <p className="text-slate-500 text-xs truncate">{m.dose}</p>
+                <p className="text-slate-900 text-xs font-bold truncate">{m.name}</p>
+                <p className="text-slate-600 text-xs truncate">{m.dose}</p>
               </div>
               <div className="text-right flex-shrink-0">
                 <p className="text-xs font-bold" style={{ color: m.color }}>{m.time}</p>
@@ -288,7 +289,7 @@ function MedicineReminderCard() {
         <motion.button
           whileHover={{ scale: 1.02, boxShadow: "0 0 20px rgba(167,139,250,0.25)" }}
           whileTap={{ scale: 0.97 }}
-          className="w-full mt-4 py-2.5 rounded-2xl text-xs font-bold text-purple-300 transition-all"
+          className="w-full mt-4 py-2.5 rounded-2xl text-xs font-bold text-purple-700 transition-all"
           style={{ background: "rgba(167,139,250,0.1)", border: "1px solid rgba(167,139,250,0.25)" }}
         >
           View All Medicines
@@ -303,7 +304,7 @@ function MedicineReminderCard() {
 ──────────────────────────────────────────── */
 function ContactAvatar({ initials, color }: { initials: string; color: string }) {
   return (
-    <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-black flex-shrink-0 relative"
+    <div className="w-10 h-10 rounded-full flex items-center justify-center text-white"
       style={{ background: `linear-gradient(135deg,${color}dd,${color}66)`, border: `2px solid ${color}55`, fontFamily: "Rajdhani, sans-serif" }}>
       {initials}
       <div className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-slate-900" />
@@ -326,7 +327,7 @@ function EmergencyContactsCard() {
               style={{ background: "rgba(6,182,212,0.15)", border: "1px solid rgba(6,182,212,0.3)" }}>
               <User size={16} className="text-cyan-400" />
             </div>
-            <h3 className="text-white font-bold text-sm" style={{ fontFamily: "Rajdhani, sans-serif" }}>Emergency Contacts</h3>
+            <h3 className="text-slate-900 font-bold text-sm" style={{ fontFamily: "Rajdhani, sans-serif" }}>Emergency Contacts</h3>
           </div>
           <button className="text-cyan-400 text-xs font-semibold flex items-center gap-0.5">
             View All <ChevronRight size={11} />
@@ -341,12 +342,13 @@ function EmergencyContactsCard() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 + i * 0.1 }}
               className="flex items-center gap-3 p-2 rounded-xl"
-              style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.05)" }}
+              style={{ background: "#f8fafc",
+border: "1px solid #e2e8f0" }}
             >
               <ContactAvatar initials={c.initials} color={c.color} />
               <div className="flex-1 min-w-0">
-                <p className="text-white text-xs font-bold truncate">{c.name}</p>
-                <p className="text-slate-500 text-xs">{c.role}</p>
+                <p className="text-slate-900 text-xs font-bold truncate">{c.name}</p>
+                <p className="text-slate-600 text-xs">{c.role}</p>
               </div>
               <div className="flex items-center gap-1.5">
                 {[Phone, MessageSquare].map((Icon, j) => (
@@ -392,7 +394,7 @@ function HealthHistoryCard() {
               style={{ background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.3)" }}>
               <Calendar size={16} className="text-emerald-400" />
             </div>
-            <h3 className="text-white font-bold text-sm" style={{ fontFamily: "Rajdhani, sans-serif" }}>Health History Timeline</h3>
+            <h3 className="text-slate-900 font-bold text-sm" style={{ fontFamily: "Rajdhani, sans-serif" }}>Health History Timeline</h3>
           </div>
           <button className="text-cyan-400 text-xs font-semibold flex items-center gap-0.5">
             View All <ArrowRight size={11} />
@@ -412,14 +414,14 @@ function HealthHistoryCard() {
               transition={{ delay: 0.3 + i * 0.12 }}
               className="relative mb-4 last:mb-0"
             >
-              <div className="absolute -left-4 w-3 h-3 rounded-full border-2 border-emerald-400 bg-slate-900"
+              <div className="absolute -left-4 w-3 h-3 rounded-full border-2 border-emerald-400 bg-white"
                 style={{ boxShadow: "0 0 8px rgba(34,197,94,0.6)", top: "2px" }} />
               <div className="p-3 rounded-2xl"
                 style={{ background: "rgba(34,197,94,0.04)", border: "1px solid rgba(34,197,94,0.12)" }}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-white text-xs font-bold">{e.label}</p>
-                    <p className="text-slate-500 text-xs mt-0.5">{e.date}</p>
+                    <p className="text-slate-900 text-xs font-bold">{e.label}</p>
+                    <p className="text-slate-600 text-xs mt-0.5">{e.date}</p>
                   </div>
                   <span className="px-2 py-0.5 rounded-lg text-xs font-bold"
                     style={{ background: `${e.color}18`, color: e.color, border: `1px solid ${e.color}30` }}>
@@ -454,7 +456,7 @@ function AIHealthCard() {
             transition={{ duration: 2.5, repeat: Infinity }}>
             <Brain size={16} className="text-purple-400" />
           </motion.div>
-          <h3 className="text-white font-bold text-sm" style={{ fontFamily: "Rajdhani, sans-serif" }}>AI Health Recommendations</h3>
+          <h3 className="text-slate-900 font-bold text-sm" style={{ fontFamily: "Rajdhani, sans-serif" }}>AI Health Recommendations</h3>
         </div>
 
         {/* AI brain visual */}
@@ -482,17 +484,18 @@ function AIHealthCard() {
               initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }}
               transition={{ delay: 0.35 + i * 0.1 }}
               className="flex items-center gap-3 p-3 rounded-2xl"
-              style={{ background:"rgba(255,255,255,0.025)", border:"1px solid rgba(255,255,255,0.05)" }}>
+              style={{ background:"#f8fafc",
+border:"1px solid #e2e8f0" }}>
               <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{ background:`${r.color}18`, border:`1px solid ${r.color}30` }}>
                 <r.icon size={14} style={{ color:r.color }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white text-xs font-bold truncate">{r.label}</p>
-                <p className="text-slate-500 text-xs">{r.sub}</p>
+                <p className="text-slate-900 text-xs font-bold truncate">{r.label}</p>
+                <p className="text-slate-600 text-xs">{r.sub}</p>
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
-                <div className="relative w-10 h-1.5 rounded-full overflow-hidden" style={{ background:"rgba(255,255,255,0.08)" }}>
+                <div className="relative w-10 h-1.5 rounded-full overflow-hidden" style={{ background:"#e2e8f0" }}>
                   <motion.div className="absolute h-auto rounded-full" style={{ background: r.color }}
                     initial={{ width:"0%" }} animate={{ width:`${r.match}%` }}
                     transition={{ duration:1.2, delay:0.5 + i*0.1 }} />
@@ -526,8 +529,8 @@ function PharmacyCard() {
             <ShoppingCart size={16} className="text-cyan-400" />
           </div>
           <div>
-            <h3 className="text-white font-bold text-sm" style={{ fontFamily:"Rajdhani,sans-serif" }}>Pharmacy & Services</h3>
-            <p className="text-slate-500 text-xs">Quick Access</p>
+            <h3 className="text-slate-900 font-bold text-sm" style={{ fontFamily:"Rajdhani,sans-serif" }}>Pharmacy & Services</h3>
+            <p className="text-slate-600 text-xs">Quick Access</p>
           </div>
         </div>
 
@@ -547,7 +550,7 @@ function PharmacyCard() {
                 style={{ background:`${color}20` }}>
                 <Icon size={18} style={{ color }} />
               </div>
-              <span className="text-slate-300 font-medium leading-tight text-center" style={{ fontSize:"10px" }}>{label}</span>
+              <span className="text-slate-700 font-medium leading-tight text-center" style={{ fontSize:"10px" }}>{label}</span>
             </motion.button>
           ))}
         </div>
@@ -568,13 +571,13 @@ function QuickActionsCard() {
             style={{ background:"rgba(239,68,68,0.15)", border:"1px solid rgba(239,68,68,0.3)" }}>
             <Zap size={16} className="text-red-400" />
           </div>
-          <h3 className="text-white font-bold text-sm" style={{ fontFamily:"Rajdhani,sans-serif" }}>Quick Actions</h3>
+          <h3 className="text-slate-900 font-bold text-sm" style={{ fontFamily:"Rajdhani,sans-serif" }}>Quick Actions</h3>
         </div>
 
         {/* Emergency SOS Big Button */}
         <motion.button
           whileHover={{ scale:1.03 }} whileTap={{ scale:0.96 }}
-          className="w-full flex items-center gap-3 px-4 py-3rounded-2xl mb-3 relative overflow-hidden"
+          className="w-full flex items-center gap-3 px-4 px-4 py-3 rounded-2xl mb-3 relative overflow-hidden"
           style={{
             background:"linear-gradient(135deg,#dc2626 0%,#991b1b 100%)",
             border:"1px solid rgba(255,100,100,0.35)",
@@ -608,8 +611,8 @@ function QuickActionsCard() {
               style={{ background:`${color}20` }}>
               <Icon size={15} style={{ color }} />
             </div>
-            <span className="text-white text-sm font-semibold">{label}</span>
-            <ChevronRight size={13} className="text-slate-500 ml-auto" />
+            <span className="text-slate-900 text-sm font-semibold">{label}</span>
+            <ChevronRight size={13} className="text-slate-600 ml-auto" />
           </motion.button>
         ))}
       </div>
@@ -622,43 +625,46 @@ function QuickActionsCard() {
 ──────────────────────────────────────────── */
 export default function HealthMonitoringSection() {
   return (
-    <section className="w-full pt-4"
-      style={{ background:"transparent" }}>
+  <section className="w-full pt-4">
+    <SectionLabel label="Health Monitoring & Quick Access" />
 
-      <SectionLabel label="Health Monitoring & Quick Access" />
+    {/* Top Row */}
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-5 mb-5">
 
-      {/* ROW 1: Health Monitor | Medicine Reminder | Emergency Contacts */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
+      <div className="xl:col-span-4">
+        <HealthMonitorCard />
+      </div>
 
-  <div className="xl:col-span-4">
-    <HealthMonitorCard />
-  </div>
+      <div className="xl:col-span-4">
+        <MedicineReminderCard />
+      </div>
 
-  <div className="xl:col-span-4">
-    <MedicineReminderCard />
-  </div>
+      <div className="xl:col-span-4">
+        <EmergencyContactsCard />
+      </div>
 
-  <div className="xl:col-span-4">
-    <EmergencyContactsCard />
-  </div>
+    </div>
 
-  <div className="xl:col-span-3">
-    <HealthHistoryCard />
-  </div>
+    {/* Bottom Row */}
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-5">
 
-  <div className="xl:col-span-3">
-    <AIHealthCard />
-  </div>
+      <div className="xl:col-span-3">
+        <HealthHistoryCard />
+      </div>
 
-  <div className="xl:col-span-3">
-    <PharmacyCard />
-  </div>
+      <div className="xl:col-span-3">
+        <AIHealthCard />
+      </div>
 
-  <div className="xl:col-span-3">
-    <QuickActionsCard />
-  </div>
+      <div className="xl:col-span-3">
+        <PharmacyCard />
+      </div>
 
-</div>
-    </section>
-  );
+      <div className="xl:col-span-3">
+        <QuickActionsCard />
+      </div>
+
+    </div>
+  </section>
+);
 }

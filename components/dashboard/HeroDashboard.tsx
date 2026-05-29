@@ -17,10 +17,10 @@ import {
   AlertCircle,
   Zap,
 } from "lucide-react";
-import HealthMonitoringSection from "../HealthMonitoringSection";
-import RecentAlerts from "./RecentAlerts";
-import BloodBank from "./BloodBank";
-import NearbyHospitals from "./NearbyHospitals";
+import HealthMonitoringSection from "./HealthMonitoringSection";
+import RecentAlerts from "./cards/RecentAlerts";
+import BloodBank from "./cards/BloodBank";
+import NearbyHospitals from "./cards/NearbyHospitals";
 
 /* ─────────────────────────────────────────────
    Tiny helpers
@@ -38,6 +38,13 @@ const floatY = {
     y: [0, -10, 0],
     transition: { duration: 4, repeat: Infinity, ease: "easeInOut" },
   },
+};
+
+const CARD_STYLE = {
+  background: "#FFFFFF",
+  border: "1px solid #DBEAFE",
+  borderRadius: "18px",
+  boxShadow: "0 2px 12px rgba(37,99,235,.06)",
 };
 
 const fadeUp = (delay = 0) => ({
@@ -192,19 +199,13 @@ function StatCard({
         scale: 1.015,
       }}
       className="
-relative overflow-hidden rounded-[28px] p-6 min-h-[145px]
-before:absolute before:inset-0 before:rounded-[inherit]
-before:border before:border-white/[0.03]
-before:pointer-events-none
+relative overflow-hidden
+rounded-[18px]
+px-6 py-5
+h-[140px]
+min-w-0
 "
-      style={{
-        background:
-  "linear-gradient(135deg, #ffffff 0%, #f8f5ef 100%)",
-        border: "1px solid rgba(15,23,42,0.06)",
-        boxShadow:
-          "0 12px 40px rgba(15,23,42,.08), inset 0 1px 0 rgba(255,255,255,0.03)",
-        backdropFilter: "blur(18px)",
-      }}
+      style={CARD_STYLE}
     >
       {/* glow */}
       <div
@@ -228,20 +229,20 @@ before:pointer-events-none
         {/* TOP */}
         <div className="flex items-start justify-between">
           <div className="flex-1 pr-4">
-            <p className="text-[11px] uppercase tracking-[0.32em] text-slate-500 font-semibold mb-5 leading-relaxed">
+            <p className="text-[10px] uppercase tracking-[0.12em] text-slate-500 font-semibold mb-2 leading-relaxed">
               {label}
             </p>
 
             {/* DEFAULT */}
             {type === "default" && (
-              <h2 className="text-[42px] leading-none font-black text-slate-800 tracking-tight">
+              <h2 className="text-[20px] leading-none font-black text-slate-800 tracking-tight">
                 {value}
               </h2>
             )}
 
             {/* HOSPITAL */}
             {type === "hospital" && (
-              <h2 className="text-[36px] leading-[0.95] font-black text-slate-800 tracking-tight">
+              <h2 className="text-[22px] leading-[1] font-black text-slate-800 tracking-tight">
                 Apollo
                 <br />
                 Hospital
@@ -250,7 +251,7 @@ before:pointer-events-none
 
             {/* HEALTH */}
             {type === "health" && (
-              <div className="text-[34px] leading-[0.9] font-black text-slate-800 tracking-tight">
+              <div className="text-[18px] leading-tight font-black text-slate-800 tracking-tight">
                 <div>LHID-</div>
                 <div>2024-</div>
                 <div>7845</div>
@@ -260,18 +261,18 @@ before:pointer-events-none
             {/* CONTACTS */}
             {type === "contacts" && (
               <div>
-                <div className="text-[42px] leading-none font-black text-slate-800">
+                <div className="text-[20px] leading-none font-black text-slate-800">
                   3
                 </div>
 
-                <div className="text-[30px] leading-none font-black text-slate-800 mt-1">
+                <div className="text-[16px] leading-none font-black text-slate-800 mt-1">
                   Contacts
                 </div>
               </div>
             )}
 
             {sub && (
-              <p className={`text-lg font-bold mt-4 ${subColor}`}>
+              <p className={`text-sm font-bold mt-2 ${subColor}`}>
                 {sub}
               </p>
             )}
@@ -281,8 +282,8 @@ before:pointer-events-none
           <div
             className="flex items-center justify-center rounded-[24px] flex-shrink-0"
             style={{
-          width: 74,
-              height: 74,
+              width: 40,
+              height: 40,
               background:
 "linear-gradient(180deg, rgba(37,99,235,0.10), rgba(37,99,235,0.04))",
               border: "1px solid rgba(37,99,235,0.12)",
@@ -294,11 +295,11 @@ before:pointer-events-none
         </div>
 
         {/* BOTTOM */}
-        <div className="mt-auto pt-5">
+        <div className="mt-auto pt-2">
           {action && (
-            <button className="flex items-center gap-1 text-blue-600 text-lg font-semibold hover:text-blue-500 transition">
+            <button className="flex items-center gap-1 text-blue-600 text-sm font-semibold hover:text-blue-500 transition">
               {action}
-              <ChevronRight size={18} />
+              <ChevronRight size={14} />
             </button>
           )}
         </div>
@@ -315,7 +316,7 @@ export default function HeroDashboard() {
 
   return (
     <div
-  className="relative overflow-hidden w-full p-6 space-y-5"
+ className="relative overflow-hidden w-full p-4 space-y-4"
 >
       {/* subtle grid texture */}
       {/* <div
@@ -330,27 +331,23 @@ export default function HeroDashboard() {
 /> */}
 
       {/* ── Top row: SOS Hero + AI Assistant + Patient Summary ── */}
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_350px] gap-4 items-stretch">
+      <div className="grid grid-cols-12 gap-6 items-stretch">
+
+  {/* LEFT SECTION */}
+  <div className="col-span-12 xl:col-span-9 flex flex-col gap-4 min-w-0">
+
+    {/* SOS HERO CARD */}
+    
 
         {/* ── Left: SOS Hero Card ── */}
         <motion.div
-          {...fadeUp(0)}
-          className="relative rounded-[32px] overflow-hidden backdrop-blur-xl min-h-[360px]"
-          style={{
-            background: `
-radial-gradient(circle at 15% 20%, rgba(255,59,92,.08), transparent 22%),
-radial-gradient(circle at 85% 10%, rgba(0,217,255,.06), transparent 20%),
-linear-gradient(135deg, #f1ebe3 0%, #e7dfd4 45%, #f3ede5 100%)
-`,
-            border: "1px solid rgba(255,99,132,.12)",
-boxShadow:
-  "0 0 0 1px rgba(255,59,92,.04), 0 12px 40px rgba(15,23,42,.08)",
-            backdropFilter: "blur(20px)",
-          }}
+ className="relative rounded-[32px] overflow-hidden"
+
+          style={CARD_STYLE}
         >
           {/* red ambient top-left */}
           <div className="absolute top-0 left-0 w-72 h-56 rounded-full pointer-events-none"
-            style={{ background: "radial-gradient(circle, rgba(220,38,38,0.18) 0%, transparent 70%)", transform: "translate(-30%, -30%)" }} />
+            style={{ background: "radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 70%)", transform: "translate(-30%, -30%)" }} />
           {/* cyan ambient bottom-right */}
           <div className="absolute bottom-0 right-56 w-64 h-48 rounded-full pointer-events-none"
             style={{ background: "radial-gradient(circle, rgba(59,130,246,0.05) 0%, transparent 70%)", transform: "translate(20%, 30%)" }} />
@@ -369,7 +366,7 @@ boxShadow:
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6 }}
-                className="text-4xl lg:text-[58px] font-black text-slate-800 mb-2 leading-tight tracking-tight"
+                className="text-4xl lg:text-[48px] font-black text-slate-800 mb-2 leading-tight tracking-tight"
                 style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.5px" }}
               >
                 Emergency{" "}
@@ -439,7 +436,7 @@ border:
             </div>
 
             {/* Ambulance illustration with radar */}
-            <div className="relative flex-shrink-0 w-[320px] h-[220px] lg:w-[430px] lg:h-[260px] lg:-mr-2">
+            <div className="relative flex-shrink-0 w-[500px] h-[280px] lg:w-[360px] lg:h-[220px] lg:-mr-2">
   
   <div
     className="absolute right-10 top-1/2 -translate-y-1/2 w-[320px] h-[320px] rounded-full blur-[7px]"
@@ -455,27 +452,67 @@ border:
                 </div>
               </div>
             </div>
-          </div>
-        </motion.div>
+      </div>
+    </motion.div>
 
-        {/* ── Right column: AI Assistant + Patient Summary ── */}
-        <div className="flex flex-col gap-4 h-full">
+    {/* 4 STATS CARDS */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
 
-          {/* AI Assistant Card */}
-          <motion.div
+      <StatCard
+        delay={0.35}
+        type="default"
+        icon={<Zap size={22} className="text-blue-600" />}
+        label="Nearest Ambulance"
+        value="3.2 km"
+        sub="ETA: 6 mins"
+        subColor="text-emerald-500"
+      />
+
+      <StatCard
+        delay={0.42}
+        type="hospital"
+        icon={<Building2 size={22} className="text-blue-600" />}
+        label="Nearest Hospital"
+        value=""
+        sub="2.8 km"
+        subColor="text-emerald-500"
+      />
+
+      <StatCard
+        delay={0.49}
+        type="health"
+        icon={<Shield size={22} className="text-blue-600" />}
+        label="Your Health ID"
+        value=""
+        action="View Profile"
+      />
+
+      <StatCard
+        delay={0.56}
+        type="contacts"
+        icon={<Users size={22} className="text-blue-600" />}
+        label="Emergency Contacts"
+        value=""
+        action="View All"
+      />
+
+    </div>
+
+  </div>
+
+  {/* RIGHT SIDEBAR */}
+  <div className="col-span-12 xl:col-span-3 flex flex-col gap-4 min-w-0">
+
+    {/* AI Assistant */}
+    <motion.div
             {...fadeUp(0.15)}
             className="
 relative rounded-2xl p-5 overflow-hidden
 before:absolute before:inset-0 before:rounded-[inherit]
 before:border before:border-white/[0.03]
 before:pointer-events-none
- min-h-[210px]"
-            style={{
-              background: "linear-gradient(135deg, #ffffff 0%, #f7f4ef 100%)",
-              border: "1px solid rgba(15,23,42,0.06)",
-              boxShadow: "0 10px 30px rgba(15,23,42,0.06), inset 0 1px 0 rgba(255,255,255,0.04)",
-              backdropFilter: "blur(18px)",
-            }}
+ min-h-[190px]"
+            style={CARD_STYLE}
           >
             {/* cyan glow */}
             <div className="absolute top-0 right-0 w-48 h-48 pointer-events-none"
@@ -516,21 +553,16 @@ before:pointer-events-none
             </motion.button>
           </motion.div>
 
-          {/* Patient Summary Card */}
-          <motion.div
+    {/* Patient Summary */}
+    <motion.div
             {...fadeUp(0.25)}
             className="
-relative rounded-2xl p-5 flex-1 overflow-hidden
+relative rounded-2xl p-5 h-[300px] overflow-hidden
 before:absolute before:inset-0 before:rounded-[inherit]
 before:border before:border-white/[0.03]
 before:pointer-events-none
 "
-            style={{
-              background: "linear-gradient(135deg, #ffffff 0%, #f7f4ef 100%)",
-              border: "1px solid rgba(15,23,42,0.06)",
-              boxShadow: "0 8px 30px rgba(15,23,42,0.06), inset 0 1px 0 rgba(255,255,255,0.03)",
-              backdropFilter: "blur(18px)",
-            }}
+            style={CARD_STYLE}
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-slate-800 font-bold text-base">Patient Summary</h3>
@@ -562,83 +594,16 @@ hover:text-blue-500 transition-colors">
               View Full History <ChevronRight size={14} />
             </button>
           </motion.div>
-        </div>
-      </div>
 
-      {/* ── Stats Row ── */}
-      {/* ───────────────── STATS ROW ───────────────── */}
-<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+  </div>
 
-  <StatCard
-    delay={0.35}
-    type="default"
-    icon={
-      <motion.div
-        animate={{ rotate: [0, 5, -5, 0] }}
-        transition={{ duration: 2, repeat: Infinity }}
-      >
-        <Zap size={34} className="text-blue-600" />
-      </motion.div>
-    }
-    label="Nearest Ambulance"
-    value="3.2 km"
-    sub="ETA: 6 mins"
-    subColor="text-emerald-400"
-  />
-
-  <StatCard
-    delay={0.42}
-    type="hospital"
-    icon={<Building2 size={34} className="text-blue-600" />}
-    label="Nearest Hospital"
-    value=""
-    sub="2.8 km"
-    subColor="text-emerald-400"
-  />
-
-  <StatCard
-    delay={0.49}
-    type="health"
-    icon={<Shield size={34} className="text-blue-600" />}
-    label="Your Health ID"
-    value=""
-    action="View Profile"
-  />
-
-  <StatCard
-    delay={0.56}
-    type="contacts"
-    icon={<Users size={34} className="text-blue-600" />}
-    label="Emergency Contacts"
-    value=""
-    action="View All"
-  />
 </div>
+
 
 {/* ───────────────── MAIN DASHBOARD ───────────────── */}
-<div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_330px] gap-4 items-start">
-
-  {/* LEFT SIDE */}
-  <div className="space-y-4">
-
-    <EmergencyCommandCenter />
-
-    <HealthMonitoringSection />
-
-  </div>
-
-  {/* RIGHT SIDE */}
-  <div className="space-y-5">
-
-    <RecentAlerts />
-
-    <BloodBank />
-
-    <NearbyHospitals />
-
-  </div>
+<div className="mt-6">
+  <EmergencyCommandCenter />
 </div>
-
 </div>
 
   );

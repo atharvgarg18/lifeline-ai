@@ -259,7 +259,7 @@ function MetricCard({ card }: { card: AnalyticsCard }) {
 }
 
 // ── Main export ───────────────────────────────────────────────────────
-export default function HealthAnalyticsSection() {
+export default function HealthAnalytics() {
   return (
     <section className="w-full bg-[#080f1e] px-4 py-5 rounded-3xl border border-cyan-500/10">
       {/* Section header */}
