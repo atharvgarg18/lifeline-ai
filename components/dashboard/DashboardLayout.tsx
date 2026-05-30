@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Sidebar from "./Sidebar";
-import Header from "./Header";
+import Sidebar from "../layout/Sidebar";
+import Header from "../layout/Header";
 
 interface Props {
   children: React.ReactNode;
@@ -15,7 +15,7 @@ export default function DashboardLayout({
 
   return (
     <div className="flex min-h-screen bg-[#f4f7fb]">
-  <Sidebar />
+  <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
   
   <div className="flex-1 lg:ml-[270px] flex flex-col">
     <Header />

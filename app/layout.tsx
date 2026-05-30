@@ -1,5 +1,11 @@
 import "@/styles/globals.css";
+import { AuthProvider } from "@/context/AuthContext";
 import LifeLineNavbar from "@/components/navbar/LifeLineNavbar";
+
+export const metadata = {
+  title: "LifeLine AI",
+  description: "AI Powered Emergency Healthcare System",
+};
 
 export default function RootLayout({
   children,
@@ -9,9 +15,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <LifeLineNavbar>
-          {children}
-        </LifeLineNavbar>
+        <AuthProvider>
+          <LifeLineNavbar>
+            {children}
+          </LifeLineNavbar>
+        </AuthProvider>
       </body>
     </html>
   );

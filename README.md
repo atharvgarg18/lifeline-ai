@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 26ed257ad8110c55e193d224dc55b330708f118c
 # 🚑 LifeLine AI - Emergency Healthcare Coordination Platform
 
 ## Project Overview
@@ -309,6 +312,7 @@ Proprietary - Do not share without permission
 ---
 
 **Status**: 🟡 Architecture & Setup Phase
+<<<<<<< HEAD
 =======
 # Frontend - LifeLine AI
 
@@ -836,3 +840,5 @@ npm run type-check
 
 **Last Updated**: May 27, 2026
 >>>>>>> 69ade68eba5255c0c3a586f3eb390fdba4144aa2
+=======
+>>>>>>> 26ed257ad8110c55e193d224dc55b330708f118c

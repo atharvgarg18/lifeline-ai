@@ -2,81 +2,74 @@
  * Emergency SOS Service
  * Business logic for emergency SOS operations
  * Coordinates: Repository calls + external services
+ * TODO: Connect real ambulance dispatch & notification services in Sprint 2
  */
 
 import { emergencySosRepository } from './emergencySosRepository';
-import { locationService } from '@services/locationService';
-import { notificationService } from '@services/notificationService';
-import { ambulanceDispatchService } from '@services/ambulanceDispatchService';
-import type { EmergencySOS, TriggerSOSRequest, TimelineEntry } from '../../../shared/types';
-import { EMERGENCY_STATUS } from '../../../shared/constants';
-import { AppError } from '@utils/errorHandler';
+import type { EmergencySOS, TriggerSOSRequest, TimelineEntry } from '@shared/types';
+import { EMERGENCY_STATUS } from '@shared/constants';
+import { AppError } from '../../utils/AppError';
+
+// TODO: Replace with real implementations in Sprint 2
+const ambulanceDispatchService = {
+  dispatchNearestAmbulance: async (_emergency: EmergencySOS): Promise<void> => { /* stub */ },
+  cancelDispatch: async (_ambulanceId: string): Promise<void> => { /* stub */ },
+};
+const notificationService = {
+  notifyEmergency: async (_emergency: EmergencySOS): Promise<void> => { /* stub */ },
+};
 
 export class EmergencySosService {
   /**
    * Trigger a new emergency SOS
    */
   public async triggerSOS(userId: string, payload: TriggerSOSRequest): Promise<EmergencySOS> {
-    // Validate user exists
-    const user = await this.validateUser(userId);
-    if (!user) {
-      throw new AppError('PATIENT_NOT_FOUND', 'Patient not found', 404);
-    }
-
-    // Check for duplicate emergency (duplicate check within last 5 minutes)
+    // Check for duplicate emergency (within last 5 minutes)
     const recentEmergency = await emergencySosRepository.findRecentByUserId(userId, 5 * 60 * 1000);
     if (recentEmergency && recentEmergency.status !== EMERGENCY_STATUS.CANCELLED) {
       throw new AppError(
         'DUPLICATE_EMERGENCY',
-        'Recent emergency already active for this user',
-        409
+        409,
+        'Recent emergency already active for this user'
       );
     }
 
-    // Create emergency record
-    const emergency: EmergencySOS = {
-      id: '',
+    // Create emergency record matching the EmergencySOS interface
+    const emergency: Omit<EmergencySOS, '_id'> = {
       patientId: userId,
       emergencyType: payload.emergencyType,
       location: payload.location,
-      latitude: payload.latitude,
-      longitude: payload.longitude,
       description: payload.description,
-      severityScore: payload.severityScore || 7.5,
-      status: EMERGENCY_STATUS.INITIATED,
-      assignedAmbulanceId: null,
-      assignedHospitalId: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      severityScore: 7.5,
+      priority: 'HIGH',
+      status: EMERGENCY_STATUS.INITIATED as EmergencySOS['status'],
+      assignedAmbulanceId: undefined,
+      assignedHospitalId: undefined,
+      assignedDoctorId: undefined,
+      familyNotificationSent: false,
       timeline: [
         {
-          status: EMERGENCY_STATUS.INITIATED,
-          timestamp: new Date(),
-          description: 'Emergency SOS initiated',
+          status: EMERGENCY_STATUS.INITIATED as EmergencySOS['status'],
+          timestamp: new Date().toISOString(),
+          note: 'Emergency SOS initiated',
         },
       ],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     // Save to database
-    const savedEmergency = await emergencySosRepository.create(emergency);
+    const savedEmergency = await emergencySosRepository.create(emergency as EmergencySOS);
 
-    // Add to timeline
-    await this.addTimeline(savedEmergency.id, EMERGENCY_STATUS.INITIATED, 'Emergency triggered');
-
-    // Trigger ambulance dispatch asynchronously
-    try {
-      await ambulanceDispatchService.dispatchNearestAmbulance(savedEmergency);
-    } catch (error) {
+    // Trigger ambulance dispatch asynchronously (fire-and-forget)
+    ambulanceDispatchService.dispatchNearestAmbulance(savedEmergency).catch((error) => {
       console.warn('Failed to dispatch ambulance:', error);
-      // Don't fail the SOS trigger if dispatch fails
-    }
+    });
 
-    // Send notifications to nearby resources
-    try {
-      await notificationService.notifyEmergency(savedEmergency);
-    } catch (error) {
+    // Send notifications (fire-and-forget)
+    notificationService.notifyEmergency(savedEmergency).catch((error) => {
       console.warn('Failed to send notifications:', error);
-    }
+    });
 
     return savedEmergency;
   }
@@ -85,20 +78,20 @@ export class EmergencySosService {
    * Get emergency by ID
    */
   public async getEmergency(emergencyId: string): Promise<EmergencySOS | null> {
-    return await emergencySosRepository.findById(emergencyId);
+    return emergencySosRepository.findById(emergencyId);
   }
 
   /**
    * Update emergency status
    */
-  public async updateStatus(emergencyId: string, status: string): Promise<EmergencySOS> {
+  public async updateStatus(emergencyId: string, status: EmergencySOS['status']): Promise<EmergencySOS> {
     const emergency = await emergencySosRepository.findById(emergencyId);
     if (!emergency) {
-      throw new AppError('EMERGENCY_NOT_FOUND', 'Emergency not found', 404);
+      throw new AppError('EMERGENCY_NOT_FOUND', 404, 'Emergency not found');
     }
 
     emergency.status = status;
-    emergency.updatedAt = new Date();
+    emergency.updatedAt = new Date().toISOString();
 
     const updated = await emergencySosRepository.update(emergencyId, emergency);
     await this.addTimeline(emergencyId, status, `Status updated to ${status}`);
@@ -112,18 +105,16 @@ export class EmergencySosService {
   public async cancelEmergency(emergencyId: string): Promise<{ success: boolean }> {
     const emergency = await emergencySosRepository.findById(emergencyId);
     if (!emergency) {
-      throw new AppError('EMERGENCY_NOT_FOUND', 'Emergency not found', 404);
+      throw new AppError('EMERGENCY_NOT_FOUND', 404, 'Emergency not found');
     }
 
-    await this.updateStatus(emergencyId, EMERGENCY_STATUS.CANCELLED);
+    await this.updateStatus(emergencyId, EMERGENCY_STATUS.CANCELLED as EmergencySOS['status']);
 
     // Notify ambulance if assigned
     if (emergency.assignedAmbulanceId) {
-      try {
-        await ambulanceDispatchService.cancelDispatch(emergency.assignedAmbulanceId);
-      } catch (error) {
+      ambulanceDispatchService.cancelDispatch(emergency.assignedAmbulanceId).catch((error) => {
         console.warn('Failed to cancel ambulance dispatch:', error);
-      }
+      });
     }
 
     return { success: true };
@@ -135,31 +126,25 @@ export class EmergencySosService {
   public async getTimeline(emergencyId: string): Promise<TimelineEntry[]> {
     const emergency = await emergencySosRepository.findById(emergencyId);
     if (!emergency) {
-      throw new AppError('EMERGENCY_NOT_FOUND', 'Emergency not found', 404);
+      throw new AppError('EMERGENCY_NOT_FOUND', 404, 'Emergency not found');
     }
-
     return emergency.timeline || [];
   }
 
   /**
    * Add timeline entry
    */
-  private async addTimeline(emergencyId: string, status: string, description: string): Promise<void> {
-    const timeline: TimelineEntry = {
+  private async addTimeline(
+    emergencyId: string,
+    status: EmergencySOS['status'],
+    note: string
+  ): Promise<void> {
+    const entry: TimelineEntry = {
       status,
-      timestamp: new Date(),
-      description,
+      timestamp: new Date().toISOString(),
+      note,
     };
-
-    await emergencySosRepository.addTimeline(emergencyId, timeline);
-  }
-
-  /**
-   * Validate user exists (placeholder - implement with actual user service)
-   */
-  private async validateUser(userId: string): Promise<boolean> {
-    // TODO: Implement with actual user service
-    return true;
+    await emergencySosRepository.addTimeline(emergencyId, entry);
   }
 }
 

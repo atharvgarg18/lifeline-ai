@@ -16,7 +16,7 @@ import {
   CheckCircle2,
   Circle,
   Radio,
-  UserRound,
+  User,
   Zap,
   MapPin,
   Building2,

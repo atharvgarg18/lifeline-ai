@@ -4,13 +4,13 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Siren,
+  Bell,
   Building2,
   ShieldCheck,
   Users,
   MapPin,
   Phone,
-  HeartPulse,
+  Heart,
   MessageCircle,
   Droplets,
   ChevronRight,
@@ -36,7 +36,7 @@ const itemVariants = {
 const statsData = [
   {
     id: "Siren",
-    icon: Siren,
+    icon: Bell,
     iconBg: "bg-red-50",
     iconColor: "text-red-500",
     badgeBg: "bg-red-500",
@@ -88,7 +88,24 @@ const statsData = [
   },
 ];
 
-function StatCard({ card, index }) {
+interface StatCardProps {
+  card: {
+    id: string;
+    icon: any;
+    iconBg: string;
+    iconColor: string;
+    badgeBg: string;
+    label: string;
+    value: string;
+    sub: string | null;
+    subColor: string | null;
+    cta: string;
+    accentBar: string;
+  };
+  index: number;
+}
+
+function StatCard({ card, index }: StatCardProps) {
   const Icon = card.icon;
   const [hovered, setHovered] = useState(false);
 
@@ -197,7 +214,7 @@ const actions = [
   },
   {
     id: "health",
-    icon: HeartPulse,
+    icon: Heart,
     label: "Health Tips",
     bg: "bg-violet-50",
     iconColor: "text-violet-500",
@@ -326,7 +343,7 @@ const alerts = [
 ];
 
 export function RecentAlertsCard() {
-  const [dismissed, setDismissed] = useState([]);
+  const [dismissed, setDismissed] = useState<number[]>([]);
 
   const visible = alerts.filter((a) => !dismissed.includes(a.id));
 

@@ -16,13 +16,13 @@ import {
   Crosshair,
   CheckCircle,
   TrendingUp,
-  Lungs,
+  Wind,
   Stethoscope,
   ChevronRight,
 } from "lucide-react";
 
 // ── Pulse ring component ──────────────────────────────────────────────────────
-const PulseRing = ({ delay = 0, size = 1 }) => (
+const PulseRing = ({ delay = 0, size = 1 }: { delay?: number; size?: number }) => (
   <motion.div
     className="absolute rounded-full border-2 border-red-400/40"
     style={{
@@ -39,7 +39,7 @@ const PulseRing = ({ delay = 0, size = 1 }) => (
 );
 
 // ── Heartbeat line SVG ────────────────────────────────────────────────────────
-const HeartbeatLine = ({ color = "#ef4444", flip = false }) => (
+const HeartbeatLine = ({ color = "#ef4444", flip = false }: { color?: string; flip?: boolean }) => (
   <svg
     width="90"
     height="40"
@@ -61,7 +61,7 @@ const HeartbeatLine = ({ color = "#ef4444", flip = false }) => (
 );
 
 // ── Mini sparkline ────────────────────────────────────────────────────────────
-const Sparkline = ({ color }) => {
+const Sparkline = ({ color }: { color: string }) => {
   const points = [0, 3, 1, 5, 2, 6, 3, 4, 5, 3, 6, 5, 7].map(
     (v, i) => `${i * 7},${20 - v * 2}`
   );
@@ -221,7 +221,17 @@ const LiveMap = () => {
 };
 
 // ── Stat card row (Ambulance / Hospital / HealthID / Contacts) ────────────────
-const QuickStatCard = ({ icon: Icon, iconColor, iconBg, title, value, sub, action }) => (
+interface QuickStatCardProps {
+  icon: React.ComponentType<{ size?: number | string; className?: string }>;
+  iconColor: string;
+  iconBg: string;
+  title: string;
+  value: string;
+  sub?: string;
+  action?: string;
+}
+
+const QuickStatCard = ({ icon: Icon, iconColor, iconBg, title, value, sub, action }: QuickStatCardProps) => (
   <motion.div
     whileHover={{ y: -2, boxShadow: "0 8px 32px rgba(59,130,246,0.10)" }}
     className="bg-white rounded-2xl p-4 flex gap-3 items-center border border-slate-100 shadow-sm flex-1 min-w-0"

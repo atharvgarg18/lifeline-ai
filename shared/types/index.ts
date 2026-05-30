@@ -603,9 +603,153 @@ export class AppError extends Error {
 }
 
 // ============================================
+// Appointment Types
+// ============================================
+
+export type AppointmentType = 'IN_PERSON' | 'VIDEO_CALL' | 'PHONE';
+export type AppointmentStatus =
+  | 'SCHEDULED'
+  | 'CONFIRMED'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'CANCELLED'
+  | 'NO_SHOW';
+
+export interface Appointment {
+  _id: string;
+  patientId: string;
+  doctorId: string;
+  hospitalId?: string;
+  type: AppointmentType;
+  status: AppointmentStatus;
+  scheduledAt: string;
+  durationMinutes: number;
+  reason: string;
+  specialization: string;
+  // Video call fields
+  videoCallRoomId?: string;
+  videoCallUrl?: string;
+  videoCallToken?: string;
+  doctorVideoToken?: string;
+  videoCallExpiresAt?: string;
+  // Recommendation metadata
+  recommendationScore?: number;
+  recommendationReason?: string;
+  // Doctor notes
+  doctorNotes?: string;
+  prescriptionId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AppointmentSlot {
+  startTime: string;
+  endTime: string;
+  available: boolean;
+}
+
+export interface DoctorRecommendation {
+  doctorId: string;
+  name: string;
+  specialization: string;
+  rating: number;
+  distance: number; // km
+  availableSlots: number;
+  nextAvailable: string;
+  recommendationScore: number;
+  recommendationReason: string;
+  hospital: {
+    name: string;
+    address: string;
+  };
+  responseTime: number; // minutes
+  totalConsultations: number;
+}
+
+export interface VideoCallSession {
+  appointmentId: string;
+  videoCallUrl: string;
+  patientToken: string;
+  doctorToken: string;
+  roomId: string;
+  expiresAt: string;
+  provider: 'daily' | 'jitsi';
+}
+
+// ============================================
+// Patient Dashboard & Analytics Types
+// ============================================
+
+export interface PatientDashboard {
+  profile: {
+    name: string;
+    bloodGroup: string;
+    healthIdNumber: string;
+    profileCompleted: boolean;
+    age?: number;
+  };
+  activeEmergency: {
+    id: string;
+    status: string;
+    emergencyType: string;
+    createdAt: string;
+  } | null;
+  recentEmergencies: Pick<EmergencySOS, '_id' | 'status' | 'emergencyType' | 'severityScore' | 'createdAt'>[];
+  upcomingAppointments: Pick<Appointment, '_id' | 'type' | 'scheduledAt' | 'specialization' | 'status'>[];
+  stats: {
+    totalEmergencies: number;
+    totalAppointments: number;
+    lastVisitDate?: string;
+    profileCompletionPercent: number;
+  };
+}
+
+export interface PatientAnalytics {
+  emergencyHistory: {
+    total: number;
+    byType: Record<string, number>;
+    byMonth: { month: string; count: number }[];
+    avgSeverityScore: number;
+    avgResponseTime: number; // minutes
+  };
+  appointments: {
+    total: number;
+    completed: number;
+    upcoming: number;
+    cancelled: number;
+    mostVisitedSpecialization?: string;
+  };
+  healthTrend: {
+    lastCheckupDate?: string;
+    chronicDiseaseCount: number;
+    activeMedicationsCount: number;
+    allergyCount: number;
+  };
+}
+
+export interface QRCodeResponse {
+  qrCodeBase64: string; // data:image/png;base64,...
+  expiresAt: string;
+  healthIdNumber: string;
+  generatedAt: string;
+}
+
+export interface QRCodePayload {
+  patientId: string;
+  healthIdNumber: string;
+  name: string;
+  bloodGroup: string;
+  allergies: string[];
+  emergencyContacts: EmergencyContact[];
+  exp: number; // Unix timestamp
+  iat: number;
+}
+
+// ============================================
 // Export all types
 // ============================================
 
 export default {
   // Types are automatically exported above
 };
+
