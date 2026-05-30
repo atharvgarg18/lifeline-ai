@@ -282,9 +282,14 @@ export interface PatientAnalytics {
 
 export interface QRCodeResponse {
   qrCodeBase64: string;
+  qrCodeDataUrl?: string;
   expiresAt: string;
   healthIdNumber: string;
   generatedAt: string;
+  name?: string;
+  bloodGroup?: string;
+  allergies?: string[];
+  emergencyContacts?: EmergencyContact[];
 }
 
 export interface QRCodePayload {

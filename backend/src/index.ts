@@ -108,13 +108,17 @@ import mongoose from 'mongoose';
 app.get(`${API_BASE}/dashboard/stats`, async (_req, res) => {
   try {
     const db = mongoose.connection.db;
-    if (!db) return res.json({ success: true, data: { emergencies: 0, patients: 0, ambulances: 0, hospitals: 98, livesSaved: 12540 } });
+    if (!db) {
+      return res.json({ success: true, data: { emergencies: 0, patients: 0, ambulances: 0, hospitals: 98, livesSaved: 12540 } });
+    }
     const [emergencies, patients] = await Promise.all([
       db.collection('emergencysoses').countDocuments(),
       db.collection('users').countDocuments({ role: 'PATIENT' }),
     ]);
-    res.json({ success: true, data: { emergencies, patients, ambulances: 32, hospitals: 98, livesSaved: 12540 + patients } });
-  } catch { res.json({ success: true, data: { emergencies: 0, patients: 0, ambulances: 32, hospitals: 98, livesSaved: 12540 } }); }
+    return res.json({ success: true, data: { emergencies, patients, ambulances: 32, hospitals: 98, livesSaved: 12540 + patients } });
+  } catch {
+    return res.json({ success: true, data: { emergencies: 0, patients: 0, ambulances: 32, hospitals: 98, livesSaved: 12540 } });
+  }
 });
 
 app.get(`${API_BASE}/dashboard/alerts`, async (_req, res) => {
@@ -122,8 +126,10 @@ app.get(`${API_BASE}/dashboard/alerts`, async (_req, res) => {
     const db = mongoose.connection.db;
     if (!db) return res.json({ success: true, data: [] });
     const alerts = await db.collection('emergencysoses').find({}).sort({ createdAt: -1 }).limit(5).toArray();
-    res.json({ success: true, data: alerts });
-  } catch { res.json({ success: true, data: [] }); }
+    return res.json({ success: true, data: alerts });
+  } catch {
+    return res.json({ success: true, data: [] });
+  }
 });
 
 // TODO: Add as modules are built:

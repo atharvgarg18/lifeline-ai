@@ -2,7 +2,7 @@
 
 import EmergencyCommandCenter from "../EmergencyCommandCenter"; 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Phone,
   // MapPin,
@@ -16,11 +16,13 @@ import {
   Activity,
   AlertCircle,
   Zap,
+  QrCode,
 } from "lucide-react";
 import HealthMonitoringSection from "./HealthMonitoringSection";
 import RecentAlerts from "./cards/RecentAlerts";
 import BloodBank from "./cards/BloodBank";
 import NearbyHospitals from "./cards/NearbyHospitals";
+import { getQrCode } from "@/lib/patientApi";
 
 /* ─────────────────────────────────────────────
    Tiny helpers
@@ -313,6 +315,26 @@ min-w-0
 ───────────────────────────────────────────── */
 export default function HeroDashboard() {
   const [sosActive, setSosActive] = useState(false);
+  const [qrData, setQrData] = useState<any>(null);
+  const [qrLoading, setQrLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    const loadQr = async () => {
+      try {
+        const data = await getQrCode();
+        if (active) setQrData(data);
+      } catch {
+        if (active) setQrData(null);
+      } finally {
+        if (active) setQrLoading(false);
+      }
+    };
+    loadQr();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <div
@@ -478,14 +500,49 @@ border:
         subColor="text-emerald-500"
       />
 
-      <StatCard
-        delay={0.49}
-        type="health"
-        icon={<Shield size={22} className="text-blue-600" />}
-        label="Your Health ID"
-        value=""
-        action="View Profile"
-      />
+      <motion.div
+        {...fadeUp(0.49)}
+        whileHover={{ y: -5, scale: 1.015 }}
+        className="relative overflow-hidden rounded-[18px] px-5 py-4 h-[140px] min-w-0"
+        style={CARD_STYLE}
+      >
+        <div
+          className="absolute -top-14 -right-14 w-40 h-40 rounded-full blur-3xl opacity-20"
+          style={{ background: "rgba(0,217,255,0.12)" }}
+        />
+        <div
+          className="absolute inset-x-0 top-0 h-px"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent, rgba(59,130,246,.14), transparent)",
+          }}
+        />
+
+        <div className="relative flex h-full items-center gap-3">
+          <div className="w-16 h-16 rounded-xl border border-slate-200 flex items-center justify-center bg-white">
+            {qrLoading ? (
+              <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            ) : qrData?.qrCodeDataUrl ? (
+              <img src={qrData.qrCodeDataUrl} alt="Patient QR Code" className="w-14 h-14" />
+            ) : (
+              <QrCode size={24} className="text-slate-300" />
+            )}
+          </div>
+
+          <div className="min-w-0">
+            <p className="text-[10px] uppercase tracking-[0.12em] text-slate-500 font-semibold mb-1">
+              Hospital Scan QR
+            </p>
+            <p className="text-xs text-slate-500">Health ID embedded</p>
+            <a
+              href="/patient/qr"
+              className="inline-flex items-center gap-1 text-blue-600 text-xs font-semibold mt-2 hover:text-blue-500 transition"
+            >
+              Open full QR <ChevronRight size={12} />
+            </a>
+          </div>
+        </div>
+      </motion.div>
 
       <StatCard
         delay={0.56}

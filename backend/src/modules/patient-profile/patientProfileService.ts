@@ -270,9 +270,18 @@ export class PatientProfileService {
    * Generate unique patient QR code (JWT-signed, 24h expiry)
    */
   async generateQrCode(userId: string): Promise<QRCodeResponse> {
-    const profile = await patientProfileRepository.findByUserId(userId);
+    let profile = await patientProfileRepository.findByUserId(userId);
     if (!profile) {
-      throw new AppError('PATIENT_NOT_FOUND', 404, 'Patient profile not found');
+      // Create a minimal profile so we can still issue a QR with available data
+      profile = await patientProfileRepository.create(userId, {
+        allergies: [],
+        chronicDiseases: [],
+        medications: [],
+        emergencyContacts: [],
+        pastSurgeries: [],
+        prescriptions: [],
+        profileCompleted: false,
+      } as Partial<IPatientProfile>);
     }
 
     const expirySeconds = QR_CODE_EXPIRY_HOURS * 60 * 60;
@@ -291,9 +300,14 @@ export class PatientProfileService {
           });
           return {
             qrCodeBase64: qrPng,
+            qrCodeDataUrl: qrPng,
             expiresAt: expiresAt.toISOString(),
             healthIdNumber: profile.healthIdNumber,
             generatedAt: profile.qrCodeGeneratedAt.toISOString(),
+            name: `${(profile as any).firstName || ''} ${(profile as any).lastName || ''}`.trim() || 'Patient',
+            bloodGroup: profile.bloodGroup,
+            allergies: profile.allergies || [],
+            emergencyContacts: profile.emergencyContacts || [],
           };
         } catch {
           // Token expired or invalid — regenerate below
@@ -305,15 +319,15 @@ export class PatientProfileService {
     const payload: Omit<QRCodePayload, 'iat'> = {
       patientId: userId,
       healthIdNumber: profile.healthIdNumber,
-      name: `${(profile as any).firstName || ''} ${(profile as any).lastName || ''}`.trim(),
+      name: `${(profile as any).firstName || ''} ${(profile as any).lastName || ''}`.trim() || 'Patient',
       bloodGroup: profile.bloodGroup,
-      allergies: profile.allergies,
-      emergencyContacts: profile.emergencyContacts,
+      allergies: profile.allergies || [],
+      emergencyContacts: profile.emergencyContacts || [],
       exp: Math.floor(expiresAt.getTime() / 1000),
     };
 
     // Sign JWT with QR secret
-    const token = jwt.sign(payload, ENV.QR_SECRET, { expiresIn: `${QR_CODE_EXPIRY_HOURS}h` });
+    const token = jwt.sign(payload, ENV.QR_SECRET);
 
     // Save token to DB
     await patientProfileRepository.saveQrToken(userId, token);
@@ -327,9 +341,14 @@ export class PatientProfileService {
 
     return {
       qrCodeBase64: qrPng,
+      qrCodeDataUrl: qrPng,
       expiresAt: expiresAt.toISOString(),
       healthIdNumber: profile.healthIdNumber,
       generatedAt: new Date().toISOString(),
+      name: payload.name,
+      bloodGroup: payload.bloodGroup,
+      allergies: payload.allergies,
+      emergencyContacts: payload.emergencyContacts,
     };
   }
 

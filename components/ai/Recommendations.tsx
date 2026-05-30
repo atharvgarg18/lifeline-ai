@@ -17,9 +17,9 @@ export default function Recommendations({ recommendations }: RecommendationsProp
   if (!recommendations?.length) return null;
 
   return (
-    <div className="bg-white/3 border border-white/8 rounded-3xl p-6">
-      <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-white/40 mb-5 flex items-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
+    <div className="bg-white border border-slate-200 rounded-3xl p-6">
+      <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600 mb-5 flex items-center gap-2">
+        <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
         AI Recommendations
       </h3>
 
@@ -27,11 +27,11 @@ export default function Recommendations({ recommendations }: RecommendationsProp
         {recommendations.map((rec, i) => (
           <div
             key={i}
-            className="flex items-start gap-3 bg-white/3 border border-white/8 rounded-2xl p-4 hover:bg-white/6 hover:border-emerald-400/30 transition-all group"
+            className="flex items-start gap-3 bg-slate-50 border border-slate-200 rounded-2xl p-4 hover:bg-white transition-all group"
           >
             <span className="text-xl flex-shrink-0 mt-0.5">{iconForIndex(i)}</span>
             <div>
-              <p className="text-sm text-white/80 leading-relaxed">{rec}</p>
+              <p className="text-sm text-slate-700 leading-relaxed">{rec}</p>
             </div>
           </div>
         ))}

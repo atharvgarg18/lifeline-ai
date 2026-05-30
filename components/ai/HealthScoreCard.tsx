@@ -44,14 +44,8 @@ export default function HealthScoreCard({ score, name }: HealthScoreCardProps) {
   const offset = circumference - (animatedScore / 100) * circumference;
 
   return (
-    <div className="relative flex flex-col items-center justify-center bg-white/3 border border-white/10 rounded-3xl p-8 overflow-hidden">
-      {/* Background glow blob */}
-      <div
-        className="absolute inset-0 rounded-3xl opacity-10"
-        style={{ background: `radial-gradient(ellipse at center, ${color} 0%, transparent 70%)` }}
-      />
-
-      <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/40 mb-6">
+    <div className="relative flex flex-col items-center justify-center bg-white border border-slate-200 rounded-3xl p-8 overflow-hidden">
+      <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500 mb-6">
         Health Score
       </p>
 
@@ -62,7 +56,7 @@ export default function HealthScoreCard({ score, name }: HealthScoreCardProps) {
           <circle
             cx="90" cy="90" r={radius}
             fill="none"
-            stroke="rgba(255,255,255,0.07)"
+            stroke="#e2e8f0"
             strokeWidth="10"
           />
           {/* Progress */}
@@ -80,10 +74,10 @@ export default function HealthScoreCard({ score, name }: HealthScoreCardProps) {
 
         {/* Score text inside circle */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-5xl font-black text-white leading-none tabular-nums">
+          <span className="text-5xl font-black text-slate-900 leading-none tabular-nums">
             {animatedScore}
           </span>
-          <span className="text-xs text-white/30 font-medium mt-1">/ 100</span>
+          <span className="text-xs text-slate-400 font-medium mt-1">/ 100</span>
         </div>
       </div>
 
@@ -99,7 +93,7 @@ export default function HealthScoreCard({ score, name }: HealthScoreCardProps) {
         {label}
       </div>
 
-      <p className="mt-3 text-white/40 text-xs text-center">
+      <p className="mt-3 text-slate-500 text-xs text-center">
         {name}&apos;s overall health
       </p>
     </div>

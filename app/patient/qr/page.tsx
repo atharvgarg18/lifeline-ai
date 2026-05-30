@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { getQrCode } from '@/lib/patientApi';
 import { motion } from 'framer-motion';
 import { QrCode, Download, RefreshCw, Shield, Heart, Phone, AlertCircle, Copy, Check } from 'lucide-react';
-import Image from 'next/image';
 
 export default function PatientQRPage() {
   const [qrData, setQrData] = useState<any>(null);
@@ -44,11 +43,11 @@ export default function PatientQRPage() {
   };
 
   return (
-    <div className="min-h-screen p-6 md:p-8" style={{ background: '#050B17' }}>
+    <div className="min-h-screen p-6 md:p-8 bg-slate-50">
       <div className="max-w-lg mx-auto">
 
         <div className="mb-8">
-          <h1 className="text-2xl font-black text-white mb-1">My Health QR</h1>
+          <h1 className="text-2xl font-black text-slate-900 mb-1">My Health QR</h1>
           <p className="text-slate-500 text-sm">Scan at any hospital for instant access to your health data</p>
         </div>
 
@@ -59,19 +58,17 @@ export default function PatientQRPage() {
         ) : !qrData ? (
           <div className="text-center py-20">
             <AlertCircle size={48} className="mx-auto text-red-500 mb-4" />
-            <p className="text-slate-400">Could not generate QR code. Please complete your profile first.</p>
+            <p className="text-slate-500">Could not generate QR code. Please complete your profile first.</p>
           </div>
         ) : (
           <>
             {/* QR Card */}
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-              className="rounded-3xl overflow-hidden mb-6"
-              style={{ background: 'linear-gradient(145deg, rgba(6,182,212,0.08), rgba(168,85,247,0.06))', border: '1px solid rgba(6,182,212,0.2)', boxShadow: '0 0 60px rgba(6,182,212,0.1)' }}>
+              className="rounded-3xl overflow-hidden mb-6 bg-white border border-slate-200 shadow-sm">
 
               {/* QR Code */}
               <div className="flex flex-col items-center p-8">
-                <div className="relative p-3 rounded-2xl mb-4"
-                     style={{ background: 'white', boxShadow: '0 0 40px rgba(6,182,212,0.3)' }}>
+                 <div className="relative p-3 rounded-2xl mb-4 bg-white shadow-sm">
                   {qrData.qrCodeDataUrl ? (
                     <img src={qrData.qrCodeDataUrl} alt="Patient QR Code"
                          className="w-48 h-48 block" />
@@ -81,19 +78,18 @@ export default function PatientQRPage() {
                     </div>
                   )}
                   {/* LifeLine watermark */}
-                  <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded text-[9px] font-bold"
-                       style={{ background: '#050B17', color: '#06b6d4' }}>LifeLine AI</div>
+                     <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded text-[9px] font-bold"
+                       style={{ background: '#0f172a', color: '#38bdf8' }}>LifeLine AI</div>
                 </div>
 
                 {/* Health ID */}
                 <div className="text-center mb-2">
-                  <p className="text-slate-400 text-xs uppercase tracking-widest mb-1">Health ID</p>
+                  <p className="text-slate-500 text-xs uppercase tracking-widest mb-1">Health ID</p>
                   <div className="flex items-center gap-2">
-                    <p className="text-white text-xl font-black tracking-widest">{qrData.healthIdNumber}</p>
+                    <p className="text-slate-900 text-xl font-black tracking-widest">{qrData.healthIdNumber}</p>
                     <button onClick={copyHealthId}
-                      className="p-1.5 rounded-lg transition-all"
-                      style={{ background: 'rgba(255,255,255,0.08)' }}>
-                      {copied ? <Check size={14} style={{ color: '#10b981' }} /> : <Copy size={14} className="text-slate-400" />}
+                      className="p-1.5 rounded-lg transition-all bg-slate-100">
+                      {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} className="text-slate-400" />}
                     </button>
                   </div>
                 </div>
@@ -106,26 +102,23 @@ export default function PatientQRPage() {
               {/* Info chips */}
               <div className="px-6 pb-6 grid grid-cols-3 gap-3">
                 {qrData.bloodGroup && (
-                  <div className="flex flex-col items-center p-3 rounded-xl"
-                       style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}>
-                    <Heart size={16} style={{ color: '#ef4444' }} className="mb-1" />
-                    <p className="text-white font-bold text-sm">{qrData.bloodGroup}</p>
+                  <div className="flex flex-col items-center p-3 rounded-xl bg-rose-50 border border-rose-200">
+                    <Heart size={16} className="mb-1 text-rose-500" />
+                    <p className="text-slate-900 font-bold text-sm">{qrData.bloodGroup}</p>
                     <p className="text-slate-500 text-[10px]">Blood Group</p>
                   </div>
                 )}
                 {qrData.allergies?.length > 0 && (
-                  <div className="flex flex-col items-center p-3 rounded-xl"
-                       style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)' }}>
-                    <AlertCircle size={16} style={{ color: '#f59e0b' }} className="mb-1" />
-                    <p className="text-white font-bold text-sm">{qrData.allergies.length}</p>
+                  <div className="flex flex-col items-center p-3 rounded-xl bg-amber-50 border border-amber-200">
+                    <AlertCircle size={16} className="mb-1 text-amber-500" />
+                    <p className="text-slate-900 font-bold text-sm">{qrData.allergies.length}</p>
                     <p className="text-slate-500 text-[10px]">Allergies</p>
                   </div>
                 )}
                 {qrData.emergencyContacts?.length > 0 && (
-                  <div className="flex flex-col items-center p-3 rounded-xl"
-                       style={{ background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.2)' }}>
-                    <Phone size={16} style={{ color: '#06b6d4' }} className="mb-1" />
-                    <p className="text-white font-bold text-sm">{qrData.emergencyContacts.length}</p>
+                  <div className="flex flex-col items-center p-3 rounded-xl bg-cyan-50 border border-cyan-200">
+                    <Phone size={16} className="mb-1 text-cyan-500" />
+                    <p className="text-slate-900 font-bold text-sm">{qrData.emergencyContacts.length}</p>
                     <p className="text-slate-500 text-[10px]">Emergency</p>
                   </div>
                 )}
@@ -133,22 +126,20 @@ export default function PatientQRPage() {
             </motion.div>
 
             {/* Security Note */}
-            <div className="flex items-start gap-3 p-4 rounded-2xl mb-6"
-                 style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}>
-              <Shield size={16} style={{ color: '#10b981' }} className="flex-shrink-0 mt-0.5" />
-              <p className="text-green-400 text-xs">This QR code is encrypted and time-limited. Only authorized healthcare providers can access your full medical data.</p>
+            <div className="flex items-start gap-3 p-4 rounded-2xl mb-6 bg-emerald-50 border border-emerald-200">
+              <Shield size={16} className="flex-shrink-0 mt-0.5 text-emerald-500" />
+              <p className="text-emerald-700 text-xs">This QR code is encrypted and time-limited. Only authorized healthcare providers can access your full medical data.</p>
             </div>
 
             {/* Actions */}
             <div className="flex gap-3">
               <button onClick={downloadQR}
-                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm"
-                style={{ background: 'linear-gradient(135deg,#06b6d4,#3b82f6)', color: 'white', boxShadow: '0 0 24px rgba(6,182,212,0.3)' }}>
+                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-500">
                 <Download size={16} /> Download
               </button>
               <button onClick={fetchQR} disabled={refreshing}
                 className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-sm"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#9ca3af' }}>
+                style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#64748b' }}>
                 <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} /> Refresh
               </button>
             </div>

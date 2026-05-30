@@ -4,12 +4,13 @@
 // Collects all user health data with validation
 // ============================================================
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { HealthInput } from "@/lib/healthCalculations";
 
 interface HealthFormProps {
   onSubmit: (data: HealthInput) => void;
   isLoading: boolean;
+  initialValues?: Partial<HealthInput>;
 }
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
@@ -41,7 +42,7 @@ function toArray(val: string): string[] {
     .filter(Boolean);
 }
 
-export default function HealthForm({ onSubmit, isLoading }: HealthFormProps) {
+export default function HealthForm({ onSubmit, isLoading, initialValues }: HealthFormProps) {
   const [form, setForm] = useState(defaultForm);
 
   // Separate string states for list fields (comma-separated input)
@@ -51,6 +52,15 @@ export default function HealthForm({ onSubmit, isLoading }: HealthFormProps) {
   const [familyHistoryStr, setFamilyHistoryStr] = useState("");
 
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
+
+  useEffect(() => {
+    if (!initialValues) return;
+    setForm((prev) => ({ ...prev, ...initialValues }));
+    if (initialValues.existingDiseases) setDiseasesStr(initialValues.existingDiseases.join(", "));
+    if (initialValues.allergies) setAllergiesStr(initialValues.allergies.join(", "));
+    if (initialValues.medications) setMedicationsStr(initialValues.medications.join(", "));
+    if (initialValues.familyHistory) setFamilyHistoryStr(initialValues.familyHistory.join(", "));
+  }, [initialValues]);
 
   function validate(): boolean {
     const e: Partial<Record<string, string>> = {};
@@ -75,16 +85,16 @@ export default function HealthForm({ onSubmit, isLoading }: HealthFormProps) {
   }
 
   const inputClass =
-    "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-cyan-400/60 focus:ring-1 focus:ring-cyan-400/30 transition-all text-sm";
-  const labelClass = "block text-xs font-semibold text-white/50 uppercase tracking-widest mb-2";
-  const sectionClass = "bg-white/3 border border-white/8 rounded-2xl p-6 space-y-5";
+    "w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all text-sm";
+  const labelClass = "block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2";
+  const sectionClass = "bg-white border border-slate-200 rounded-2xl p-6 space-y-5";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* ── Basic Details ──────────────────────────────────── */}
       <div className={sectionClass}>
-        <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-2">
-          <span className="w-6 h-6 rounded-full bg-cyan-400/20 flex items-center justify-center text-xs">1</span>
+        <h3 className="text-sm font-bold text-slate-700 uppercase tracking-widest flex items-center gap-2">
+          <span className="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xs">1</span>
           Basic Details
         </h3>
 
@@ -97,7 +107,7 @@ export default function HealthForm({ onSubmit, isLoading }: HealthFormProps) {
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
             />
-            {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
+            {errors.name && <p className="text-red-600 text-xs mt-1">{errors.name}</p>}
           </div>
 
           <div>
@@ -108,7 +118,7 @@ export default function HealthForm({ onSubmit, isLoading }: HealthFormProps) {
               value={form.age}
               onChange={(e) => setForm({ ...form, age: +e.target.value })}
             />
-            {errors.age && <p className="text-red-400 text-xs mt-1">{errors.age}</p>}
+            {errors.age && <p className="text-red-600 text-xs mt-1">{errors.age}</p>}
           </div>
 
           <div>
@@ -145,7 +155,7 @@ export default function HealthForm({ onSubmit, isLoading }: HealthFormProps) {
               value={form.height}
               onChange={(e) => setForm({ ...form, height: +e.target.value })}
             />
-            {errors.height && <p className="text-red-400 text-xs mt-1">{errors.height}</p>}
+            {errors.height && <p className="text-red-600 text-xs mt-1">{errors.height}</p>}
           </div>
 
           <div>
@@ -156,15 +166,15 @@ export default function HealthForm({ onSubmit, isLoading }: HealthFormProps) {
               value={form.weight}
               onChange={(e) => setForm({ ...form, weight: +e.target.value })}
             />
-            {errors.weight && <p className="text-red-400 text-xs mt-1">{errors.weight}</p>}
+            {errors.weight && <p className="text-red-600 text-xs mt-1">{errors.weight}</p>}
           </div>
         </div>
       </div>
 
       {/* ── Lifestyle Data ──────────────────────────────────── */}
       <div className={sectionClass}>
-        <h3 className="text-sm font-bold text-violet-400 uppercase tracking-widest flex items-center gap-2">
-          <span className="w-6 h-6 rounded-full bg-violet-400/20 flex items-center justify-center text-xs">2</span>
+        <h3 className="text-sm font-bold text-slate-700 uppercase tracking-widest flex items-center gap-2">
+          <span className="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xs">2</span>
           Lifestyle
         </h3>
 
@@ -209,17 +219,17 @@ export default function HealthForm({ onSubmit, isLoading }: HealthFormProps) {
 
           <div>
             <label className={labelClass}>
-              Stress Level — <span className="text-white/70">{form.stressLevel}/10</span>
+              Stress Level — <span className="text-slate-500">{form.stressLevel}/10</span>
             </label>
             <input
               type="range"
               min="1"
               max="10"
-              className="w-full accent-violet-400 mt-3"
+              className="w-full accent-blue-500 mt-3"
               value={form.stressLevel}
               onChange={(e) => setForm({ ...form, stressLevel: +e.target.value })}
             />
-            <div className="flex justify-between text-white/30 text-xs mt-1">
+            <div className="flex justify-between text-slate-400 text-xs mt-1">
               <span>Low</span><span>High</span>
             </div>
           </div>
@@ -255,10 +265,10 @@ export default function HealthForm({ onSubmit, isLoading }: HealthFormProps) {
 
       {/* ── Medical Information ─────────────────────────────── */}
       <div className={sectionClass}>
-        <h3 className="text-sm font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-2">
-          <span className="w-6 h-6 rounded-full bg-emerald-400/20 flex items-center justify-center text-xs">3</span>
+        <h3 className="text-sm font-bold text-slate-700 uppercase tracking-widest flex items-center gap-2">
+          <span className="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xs">3</span>
           Medical Information
-          <span className="ml-auto text-white/20 text-xs font-normal normal-case tracking-normal">comma-separated</span>
+          <span className="ml-auto text-slate-400 text-xs font-normal normal-case tracking-normal">comma-separated</span>
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -308,7 +318,7 @@ export default function HealthForm({ onSubmit, isLoading }: HealthFormProps) {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-violet-600 text-white font-bold text-sm tracking-widest uppercase hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-cyan-500/20 active:scale-[0.99]"
+        className="w-full py-4 rounded-2xl bg-blue-600 text-white font-bold text-sm tracking-widest uppercase hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.99]"
       >
         {isLoading ? (
           <span className="flex items-center justify-center gap-3">

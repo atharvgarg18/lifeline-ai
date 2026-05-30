@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jwt, { type Secret, type SignOptions } from 'jsonwebtoken';
 import { ENV } from '../../config/env';
 import { AppError } from '../../utils/AppError';
 import { UserModel, IUser } from './User.model';
@@ -35,14 +35,14 @@ interface AuthResponse {
 
 const generateTokens = (user: IUser): AuthTokens => {
   const payload = { id: user._id, email: user.email, role: user.role };
+  const jwtSecret = ENV.JWT_SECRET as Secret;
+  const jwtRefreshSecret = ENV.JWT_REFRESH_SECRET as Secret;
+  const accessExpiresIn = ENV.JWT_EXPIRY as SignOptions['expiresIn'];
+  const refreshExpiresIn = ENV.JWT_REFRESH_EXPIRY as SignOptions['expiresIn'];
 
-  const accessToken = jwt.sign(payload, ENV.JWT_SECRET, {
-    expiresIn: ENV.JWT_EXPIRY,
-  });
+  const accessToken = jwt.sign(payload, jwtSecret, { expiresIn: accessExpiresIn });
 
-  const refreshToken = jwt.sign(payload, ENV.JWT_REFRESH_SECRET, {
-    expiresIn: ENV.JWT_REFRESH_EXPIRY,
-  });
+  const refreshToken = jwt.sign(payload, jwtRefreshSecret, { expiresIn: refreshExpiresIn });
 
   return { accessToken, refreshToken, expiresIn: Number(ENV.JWT_EXPIRY) };
 };

@@ -12,8 +12,8 @@
       "@utils/*": ["utils/*"],
       "@middleware/*": ["middleware/*"],
       "@config/*": ["config/*"],
-      "@shared/types": ["../../shared/types"],
-      "@shared/constants": ["../../shared/constants"]
+      "@shared/types": ["shared/types"],
+      "@shared/constants": ["shared/constants"]
     },
     "strict": true,
     "esModuleInterop": true,
