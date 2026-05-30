@@ -6,7 +6,7 @@ services:
     region: oregon
     rootDir: backend
     buildCommand: npm install --include=dev && npm run build
-    startCommand: node dist/src/index.js
+    startCommand: npm run start
     healthCheckPath: /api/v1/health
     autoDeploy: true
     envVars:
