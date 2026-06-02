@@ -6,10 +6,20 @@
 import Groq from "groq-sdk";
 import { HealthInput, HealthMetrics } from "./healthCalculations";
 
-// Initialize Groq client using env variable
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+let groqClient: Groq | null = null;
+
+const getGroqClient = (): Groq => {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      "GROQ_API_KEY is missing. Provide it in the environment to use AI analysis."
+    );
+  }
+  if (!groqClient) {
+    groqClient = new Groq({ apiKey });
+  }
+  return groqClient;
+};
 
 export const GROQ_MODEL = "llama-3.3-70b-versatile";
 
@@ -83,6 +93,7 @@ export async function analyzeHealthWithAI(
   metrics: HealthMetrics
 ): Promise<AIHealthAnalysis> {
   const prompt = buildHealthPrompt(input, metrics);
+  const groq = getGroqClient();
 
   const completion = await groq.chat.completions.create({
     model: GROQ_MODEL,
