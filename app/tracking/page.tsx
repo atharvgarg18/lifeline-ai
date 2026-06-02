@@ -1,6 +1,6 @@
 
-import LiveTrackingBottom from "@/components/livetracking/LiveTrackingBottom";
-import LiveTrackingPage from "@/components/livetracking/Livetrackingpage";
+import LiveTrackingBottom from "@/components/tracking/LiveTrackingBottom";
+import LiveTrackingPage from "@/components/tracking/Livetrackingpage";
 
 export default function Page() {
   return (

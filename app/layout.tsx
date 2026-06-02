@@ -1,6 +1,6 @@
 import "../styles/globals.css";
 import { AuthProvider } from "@/context/AuthContext";
-import LifeLineNavbar from "@/components/navbar/LifeLineNavbar";
+import LifeLineNavbar from "@/components/navbar/Navbar";
 
 export const metadata = {
   title: "LifeLine AI",
