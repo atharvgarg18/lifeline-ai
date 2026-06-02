@@ -2,6 +2,7 @@ import jwt, { type Secret, type SignOptions } from 'jsonwebtoken';
 import { ENV } from '../../config/env';
 import { AppError } from '../../utils/AppError';
 import { UserModel, IUser } from './User.model';
+import { patientProfileRepository } from '../patient-profile/patientProfileRepository';
 
 interface RegisterPayload {
   name: string;
@@ -31,6 +32,7 @@ interface AuthResponse {
     role: string;
   };
   tokens: AuthTokens;
+  healthIdNumber?: string;
 }
 
 const generateTokens = (user: IUser): AuthTokens => {
@@ -70,8 +72,22 @@ export class AuthService {
       role: payload.role || 'PATIENT',
     });
 
+    let healthIdNumber: string | undefined;
+    if ((payload.role || 'PATIENT') === 'PATIENT') {
+      const profile = await patientProfileRepository.create(user._id, {
+        allergies: [],
+        chronicDiseases: [],
+        medications: [],
+        emergencyContacts: [],
+        pastSurgeries: [],
+        prescriptions: [],
+        profileCompleted: false,
+      });
+      healthIdNumber = profile.healthIdNumber;
+    }
+
     const tokens = generateTokens(user);
-    return { user: formatUser(user), tokens };
+    return { user: formatUser(user), tokens, healthIdNumber };
   }
 
   async login(payload: LoginPayload): Promise<AuthResponse> {
