@@ -1,6 +1,6 @@
 import "../styles/globals.css";
 import { AuthProvider } from "@/context/AuthContext";
-import LifeLineNavbar from "@/components/navbar/Navbar";
+import Navbar from "@/components/layout/Navbar";
 
 export const metadata = {
   title: "LifeLine AI",
@@ -16,9 +16,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AuthProvider>
-          <LifeLineNavbar>
+          <Navbar>
             {children}
-          </LifeLineNavbar>
+          </Navbar>
         </AuthProvider>
       </body>
     </html>

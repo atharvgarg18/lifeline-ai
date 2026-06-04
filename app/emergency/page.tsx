@@ -1,6 +1,6 @@
-import EmergencySOSDashboard from "@/components/emergency/EmergencySOSDashboard";
-import LifelineMedicalSections from "@/components/emergency/LifelineMedicalSections";
-import LifelineDashboardSections from "@/components/emergency/LifelineDashboardSections";
+import EmergencySOSDashboard from "@/components/emergency/EmergencyDashboard";
+import LifelineMedicalSections from "@/components/emergency/MedicalStatusSection";
+import LifelineDashboardSections from "@/components/emergency/EmergencyResponseSections";
 import { HealthAnalytics } from "@/components/emergency/HealthAnalytics";
 
 export default function Page() {

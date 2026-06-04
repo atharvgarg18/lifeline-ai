@@ -1,4 +1,4 @@
-import PatientHistory from '@/components/patient/history/PatientHistory';
+import PatientHistory from '@/components/patient/PatientHistory';
 
 export default function PatientHistoryPage() {
   return (
