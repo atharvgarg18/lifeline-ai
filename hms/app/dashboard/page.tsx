@@ -121,27 +121,27 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 px-2 sm:px-0">
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {statCards.map((stat) => {
           const Icon = stat.icon
           return (
             <div
               key={stat.title}
-              className="bg-white rounded-lg shadow p-6 border border-gray-200"
+              className="bg-white rounded-lg shadow p-4 sm:p-6 border border-gray-200"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600">
                     {stat.title}
                   </p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">
                     {stat.value}
                   </p>
                 </div>
                 <div className={`${stat.color} p-3 rounded-lg`}>
-                  <Icon className="w-6 h-6 text-white" />
+                  <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
               </div>
             </div>

@@ -135,20 +135,20 @@ export default function QRScannerPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="w-full mx-auto space-y-4 sm:space-y-6 px-2 sm:px-4 max-w-4xl">
       {/* Header */}
-      <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
-        <div className="flex items-center justify-between">
+      <div className="bg-white rounded-lg shadow border border-gray-200 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">QR Code Scanner</h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">QR Code Scanner</h2>
+            <p className="text-xs sm:text-sm text-gray-600 mt-1">
               Scan patient QR code for instant admission
             </p>
           </div>
           {!isScanning && !patientData && (
             <button
               onClick={handleStartScanning}
-              className="flex items-center space-x-2 px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors"
+              className="flex items-center justify-center space-x-2 px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors w-full sm:w-auto"
             >
               <Camera className="w-5 h-5" />
               <span>Start Scanner</span>
@@ -209,24 +209,24 @@ export default function QRScannerPage() {
 
       {/* Scanner */}
       {shouldShowScanner && (
-        <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
-          <div className="flex flex-col items-center space-y-4">
-            <div className="w-full max-w-lg relative">
-              <div id="qr-reader" className="rounded-lg overflow-hidden"></div>
+        <div className="bg-white rounded-lg shadow border border-gray-200 p-3 sm:p-6">
+          <div className="flex flex-col items-center space-y-3 sm:space-y-4">
+            <div className="w-full relative">
+              <div id="qr-reader" className="rounded-lg overflow-hidden min-h-[250px] sm:min-h-[350px]"></div>
               
               {/* Scanner Controls */}
               {isScanning && (
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center space-x-3 z-10">
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center space-x-4 z-10">
                   {/* Torch/Flashlight Toggle */}
                   <button
                     onClick={toggleTorch}
-                    className="p-3 bg-black bg-opacity-60 text-white rounded-full hover:bg-opacity-80 transition-all shadow-lg"
+                    className="p-4 sm:p-3 bg-black bg-opacity-70 text-white rounded-full hover:bg-opacity-90 transition-all shadow-lg touch-manipulation active:scale-95"
                     title={isTorchOn ? 'Turn off flashlight' : 'Turn on flashlight'}
                   >
                     {isTorchOn ? (
-                      <Flashlight className="w-5 h-5" />
+                      <Flashlight className="w-6 h-6 sm:w-5 sm:h-5" />
                     ) : (
-                      <FlashlightOff className="w-5 h-5" />
+                      <FlashlightOff className="w-6 h-6 sm:w-5 sm:h-5" />
                     )}
                   </button>
 
@@ -234,18 +234,18 @@ export default function QRScannerPage() {
                   {cameras.length > 1 && (
                     <button
                       onClick={switchCamera}
-                      className="p-3 bg-black bg-opacity-60 text-white rounded-full hover:bg-opacity-80 transition-all shadow-lg"
+                      className="p-4 sm:p-3 bg-black bg-opacity-70 text-white rounded-full hover:bg-opacity-90 transition-all shadow-lg touch-manipulation active:scale-95"
                       title="Switch camera"
                     >
-                      <SwitchCamera className="w-5 h-5" />
+                      <SwitchCamera className="w-6 h-6 sm:w-5 sm:h-5" />
                     </button>
                   )}
                 </div>
               )}
             </div>
             
-            <div className="text-center text-sm text-gray-600 space-y-2">
-              <p className="font-medium">📷 Position QR code within the frame</p>
+            <div className="text-center text-sm text-gray-600 space-y-2 px-2">
+              <p className="font-medium text-base sm:text-sm">📷 Position QR code within the frame</p>
               <p className="text-xs">Scanner will automatically detect and verify the code</p>
               {cameras.length > 0 && (
                 <p className="text-xs text-gray-500">
@@ -256,7 +256,7 @@ export default function QRScannerPage() {
 
             <button
               onClick={handleStopScanning}
-              className="flex items-center space-x-2 px-6 py-2 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors"
+              className="flex items-center justify-center space-x-2 w-full sm:w-auto px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors touch-manipulation active:scale-95"
             >
               <X className="w-4 h-4" />
               <span>Stop Scanner</span>
@@ -269,9 +269,9 @@ export default function QRScannerPage() {
       {patientData && (
         <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
           {/* Success banner */}
-          <div className="bg-success-50 border-b border-success-200 p-4">
+          <div className="bg-success-50 border-b border-success-200 p-3 sm:p-4">
             <div className="flex items-center">
-              <CheckCircle className="w-6 h-6 text-success-600 mr-3" />
+              <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-success-600 mr-2 sm:mr-3 flex-shrink-0" />
               <div>
                 <p className="text-sm font-medium text-success-900">
                   QR Code Verified Successfully
@@ -284,23 +284,23 @@ export default function QRScannerPage() {
           </div>
 
           {/* Patient details */}
-          <div className="p-6 space-y-6">
-            <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
-                <User className="w-8 h-8 text-primary-600" />
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 max-h-[70vh] overflow-y-auto">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <User className="w-6 h-6 sm:w-8 sm:h-8 text-primary-600" />
               </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900">
+              <div className="min-w-0">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
                   {patientData.name}
                 </h3>
-                <p className="text-sm text-gray-600">
+                <p className="text-xs sm:text-sm text-gray-600 truncate">
                   Patient ID: {patientData.patientId}
                 </p>
               </div>
             </div>
 
             {/* Patient details grid */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <p className="text-xs font-medium text-gray-500 uppercase">Age</p>
                 <p className="text-sm font-medium text-gray-900 mt-1">
@@ -323,7 +323,7 @@ export default function QRScannerPage() {
               </div>
               <div>
                 <p className="text-xs font-medium text-gray-500 uppercase">Phone</p>
-                <p className="text-sm font-medium text-gray-900 mt-1">
+                <p className="text-sm font-medium text-gray-900 mt-1 truncate">
                   {patientData.phone || 'N/A'}
                 </p>
               </div>
@@ -331,10 +331,10 @@ export default function QRScannerPage() {
 
             {/* Allergies */}
             {patientData.allergies && patientData.allergies.length > 0 && (
-              <div className="bg-danger-50 border border-danger-200 rounded-lg p-4">
+              <div className="bg-danger-50 border border-danger-200 rounded-lg p-3 sm:p-4">
                 <div className="flex items-start">
-                  <AlertCircle className="w-5 h-5 text-danger-600 mr-2 mt-0.5" />
-                  <div>
+                  <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-danger-600 mr-2 mt-0.5 flex-shrink-0" />
+                  <div className="min-w-0">
                     <p className="text-sm font-medium text-danger-900">
                       Allergies
                     </p>
@@ -349,10 +349,10 @@ export default function QRScannerPage() {
             {/* Chronic Diseases */}
             {patientData.chronicDiseases &&
               patientData.chronicDiseases.length > 0 && (
-                <div className="bg-warning-50 border border-warning-200 rounded-lg p-4">
+                <div className="bg-warning-50 border border-warning-200 rounded-lg p-3 sm:p-4">
                   <div className="flex items-start">
-                    <AlertCircle className="w-5 h-5 text-warning-600 mr-2 mt-0.5" />
-                    <div>
+                    <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-warning-600 mr-2 mt-0.5 flex-shrink-0" />
+                    <div className="min-w-0">
                       <p className="text-sm font-medium text-warning-900">
                         Chronic Diseases
                       </p>
@@ -375,10 +375,10 @@ export default function QRScannerPage() {
                     {patientData.emergencyContacts.map((contact: any, index: number) => (
                       <div
                         key={index}
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-gray-50 rounded-lg space-y-1 sm:space-y-0"
                       >
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
                             {contact.name}
                           </p>
                           <p className="text-xs text-gray-600">
@@ -395,10 +395,10 @@ export default function QRScannerPage() {
               )}
 
             {/* Actions */}
-            <div className="flex space-x-4 pt-4 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 pt-4 border-t border-gray-200">
               <button
                 onClick={handleQuickAdmit}
-                className="flex-1 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors"
+                className="flex-1 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors touch-manipulation active:scale-95"
               >
                 Quick Admit Patient
               </button>
@@ -407,7 +407,7 @@ export default function QRScannerPage() {
                   setPatientData(null)
                   handleStartScanning()
                 }}
-                className="px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors"
+                className="sm:w-auto px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors touch-manipulation active:scale-95"
               >
                 Scan Another
               </button>

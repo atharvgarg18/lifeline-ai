@@ -8,6 +8,12 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'LifeLine HMS - Hospital Management System',
   description: 'Comprehensive Hospital Management System for LifeLine AI Platform',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  },
 }
 
 export default function RootLayout({
