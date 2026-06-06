@@ -159,17 +159,29 @@ app.get('/api/v1/health', (_req, res) => {
 // ── Module Routes ─────────────────────────────────────────────────
 const API_BASE = '/api/v1';
 
+// Debug: Log all registered routes
+console.log('📝 Registering API routes...');
+
 // Auth (public — no authenticate middleware)
 app.use(`${API_BASE}/auth`, authRoutes);
+console.log('  ✓ Auth routes mounted at', `${API_BASE}/auth`);
 
 // Critical endpoint: extra rate limiting
 app.use(`${API_BASE}/emergency/sos/trigger`, criticalLimiter);
 
 app.use(`${API_BASE}/emergency`, emergencySosRoutes);
+console.log('  ✓ Emergency routes mounted at', `${API_BASE}/emergency`);
+
 app.use(`${API_BASE}/patient`, patientProfileRoutes);
 app.use(`${API_BASE}/patient-profile`, patientProfileRoutes);
+console.log('  ✓ Patient routes mounted at', `${API_BASE}/patient`);
+
 app.use(`${API_BASE}/appointments`, appointmentRoutes);
+console.log('  ✓ Appointment routes mounted at', `${API_BASE}/appointments`);
+
 app.use(`${API_BASE}/hms`, hmsRoutes);
+console.log('  ✓ HMS routes mounted at', `${API_BASE}/hms`);
+console.log('✅ All routes registered\n');
 
 // ── Dashboard Stats (public for dev) ──────────────────────────────
 import mongoose from 'mongoose';
