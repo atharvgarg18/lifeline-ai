@@ -3,8 +3,14 @@
  * Validates all required env vars at startup — fails fast if missing
  */
 
+
 import dotenv from 'dotenv';
-dotenv.config({ path: '.env.local' });
+import fs from 'fs';
+
+console.log('ENV FILE EXISTS:', fs.existsSync('.env'));
+console.log('CURRENT DIRECTORY:', process.cwd());
+
+dotenv.config();
 
 const optional = (key: string, defaultValue: string): string => {
   return process.env[key] || defaultValue;
@@ -42,6 +48,9 @@ export const ENV = {
 
   // Maps
   GOOGLE_MAPS_API_KEY: optional('GOOGLE_MAPS_API_KEY', ''),
+  GOOGLE_CLIENT_ID: optional('GOOGLE_CLIENT_ID', ''),
+  GOOGLE_CLIENT_SECRET: optional('GOOGLE_CLIENT_SECRET', ''),
+  GOOGLE_REDIRECT_URI: optional('GOOGLE_REDIRECT_URI', ''),
 
   // Video Call
   DAILY_API_KEY: optional('DAILY_API_KEY', ''),           // Daily.co API key
@@ -61,3 +70,4 @@ export const ENV = {
 } as const;
 
 export type EnvConfig = typeof ENV;
+console.log("ENV TEST:", process.env.GOOGLE_CLIENT_ID);

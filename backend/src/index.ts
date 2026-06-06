@@ -8,6 +8,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { createServer } from 'http';
+import healthRoutes from './modules/health/health.routes';
 
 // Config
 import { ENV } from './config/env';
@@ -113,6 +114,7 @@ app.use(`${API_BASE}/emergency/sos/trigger`, criticalLimiter);
 app.use(`${API_BASE}/emergency`, emergencySosRoutes);
 app.use(`${API_BASE}/patient`, patientProfileRoutes);
 app.use(`${API_BASE}/appointments`, appointmentRoutes);
+app.use(`${API_BASE}/health`, healthRoutes);
 
 // ── Dashboard Stats (public for dev) ──────────────────────────────
 import mongoose from 'mongoose';
