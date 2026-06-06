@@ -31,4 +31,7 @@ router.get('/beds/availability', HMSController.getBedAvailability);
 router.post('/beds/allocate', HMSController.allocateBed);
 router.post('/beds/release', HMSController.releaseBed);
 
+// Seed data (for testing/development)
+router.post('/seed/beds', HMSController.seedBeds);
+
 export default router;

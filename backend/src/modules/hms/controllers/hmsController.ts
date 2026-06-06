@@ -542,4 +542,140 @@ export class HMSController {
       next(error);
     }
   }
+
+  /**
+   * Seed beds for testing (development/testing only)
+   * POST /api/v1/hms/seed/beds
+   */
+  static async seedBeds(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { hospitalId } = req.body;
+      
+      if (!hospitalId) {
+        throw new AppError('MISSING_HOSPITAL_ID', 400, 'Hospital ID is required');
+      }
+
+      const { Bed } = await import('../models/Bed.model');
+
+      // Delete existing beds for this hospital
+      const deleteResult = await Bed.deleteMany({ hospitalId });
+      console.log(`Deleted ${deleteResult.deletedCount} existing beds`);
+
+      const bedConfigs = [
+        // ICU Beds
+        {
+          ward: 'ICU',
+          bedType: 'ICU',
+          floor: 3,
+          rooms: ['ICU-1', 'ICU-2', 'ICU-3'],
+          bedsPerRoom: 2,
+          features: ['Ventilator', 'Cardiac Monitor', 'IV Pump'],
+          pricePerDay: 5000,
+        },
+        // NICU Beds
+        {
+          ward: 'NICU',
+          bedType: 'NICU',
+          floor: 3,
+          rooms: ['NICU-1'],
+          bedsPerRoom: 3,
+          features: ['Incubator', 'Ventilator', 'Monitor'],
+          pricePerDay: 6000,
+        },
+        // General Ward
+        {
+          ward: 'GENERAL',
+          bedType: 'GENERAL',
+          floor: 2,
+          rooms: ['G-101', 'G-102', 'G-103', 'G-104'],
+          bedsPerRoom: 4,
+          features: ['AC', 'TV'],
+          pricePerDay: 1500,
+        },
+        // Deluxe Rooms
+        {
+          ward: 'DELUXE',
+          bedType: 'DELUXE',
+          floor: 4,
+          rooms: ['D-401', 'D-402', 'D-403'],
+          bedsPerRoom: 1,
+          features: ['AC', 'TV', 'Attached Bathroom', 'Sofa', 'Mini Fridge'],
+          pricePerDay: 3500,
+        },
+        // Semi-Deluxe Rooms
+        {
+          ward: 'SEMI_DELUXE',
+          bedType: 'SEMI_DELUXE',
+          floor: 4,
+          rooms: ['SD-404', 'SD-405'],
+          bedsPerRoom: 2,
+          features: ['AC', 'TV', 'Attached Bathroom'],
+          pricePerDay: 2500,
+        },
+        // Emergency
+        {
+          ward: 'EMERGENCY',
+          bedType: 'EMERGENCY',
+          floor: 1,
+          rooms: ['ER-1', 'ER-2'],
+          bedsPerRoom: 4,
+          features: ['Oxygen', 'Monitor'],
+          pricePerDay: 2000,
+        },
+      ];
+
+      let totalCreated = 0;
+
+      for (const config of bedConfigs) {
+        for (const room of config.rooms) {
+          for (let i = 1; i <= config.bedsPerRoom; i++) {
+            const bedNumber = `${room}-${i}`;
+            const bedId = `BED-${hospitalId}-${config.ward}-${room}-${i}`;
+
+            await Bed.create({
+              bedId,
+              hospitalId,
+              bedNumber,
+              ward: config.ward,
+              bedType: config.bedType,
+              floor: config.floor,
+              room,
+              status: 'AVAILABLE',
+              features: config.features,
+              pricePerDay: config.pricePerDay,
+            });
+
+            totalCreated++;
+          }
+        }
+      }
+
+      // Get summary
+      const summary = await Bed.aggregate([
+        { $match: { hospitalId } },
+        { $group: { _id: '$bedType', count: { $sum: 1 } } },
+      ]);
+
+      res.json(
+        successResponse(
+          {
+            hospitalId,
+            totalCreated,
+            summary: summary.reduce((acc, item) => {
+              acc[item._id] = item.count;
+              return acc;
+            }, {} as Record<string, number>),
+          },
+          `Created ${totalCreated} beds for hospital ${hospitalId}`
+        )
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
 }
+
