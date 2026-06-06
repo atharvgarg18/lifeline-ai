@@ -38,20 +38,41 @@ export class HMSController {
         return;
       }
 
-      // Get patient data (assume we have patient service)
-      // const patient = await PatientService.getPatient(validation.patientId!);
+      // Get full patient data from database using userId
+      const { UserModel } = await import('../../auth/User.model');
+      const { patientProfileRepository } = await import('../../patient-profile/patientProfileRepository');
 
-      // Mock patient data for now
+      const user = await UserModel.findById(validation.userId);
+      if (!user) {
+        res.status(404).json({
+          success: false,
+          message: 'Patient not found',
+        });
+        return;
+      }
+
+      const profile = await patientProfileRepository.findByUserId(validation.userId!);
+      if (!profile) {
+        res.status(404).json({
+          success: false,
+          message: 'Patient profile not found',
+        });
+        return;
+      }
+
+      // Build complete patient data
       const patient = {
-        patientId: validation.patientId,
-        name: 'Mock Patient',
-        age: 35,
-        gender: 'MALE',
-        bloodGroup: 'O+',
-        allergies: ['Penicillin'],
-        chronicDiseases: ['Hypertension'],
-        emergencyContacts: [],
-        medicalHistory: [],
+        userId: validation.userId,
+        healthIdNumber: validation.healthIdNumber || profile.healthIdNumber,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        bloodGroup: profile.bloodGroup,
+        allergies: profile.allergies || [],
+        chronicDiseases: profile.chronicDiseases || [],
+        medications: profile.medications || [],
+        emergencyContacts: profile.emergencyContacts || [],
+        medicalHistory: [], // Add if needed
       };
 
       res.json(

@@ -53,7 +53,7 @@ export default function QRScannerPage() {
             icon: '✓',
           })
         } else {
-          toast.error('Invalid or expired QR code')
+          toast.error(response.data?.message || 'Invalid or expired QR code')
           setTimeout(() => handleStartScanning(), 2000)
         }
       } catch (error: any) {
@@ -104,12 +104,13 @@ export default function QRScannerPage() {
       const hospitalId = process.env.NEXT_PUBLIC_HOSPITAL_ID || 'HOSP-001'
       
       // Call quick admit API
-      const response = await hmsApi.post('/admissions/quick', {
-        patientId: patientData._id || patientData.id,
+      const response = await hmsApi.quickAdmit({
+        patientId: patientData.userId, // Use userId (actual user ID from auth)
         qrCodeId: patientData.qrCodeId,
         hospitalId: hospitalId,
         admissionType: 'Emergency',
         bedType: 'General',
+        symptoms: ['Emergency admission via QR scan'],
       })
 
       toast.dismiss(loadingToast)
@@ -120,7 +121,7 @@ export default function QRScannerPage() {
           icon: '✓',
         })
         
-        // Navigate to patient details or admissions list
+        // Navigate to admissions list
         setTimeout(() => {
           router.push('/dashboard/admissions')
         }, 1500)
@@ -294,7 +295,7 @@ export default function QRScannerPage() {
                   {patientData.name}
                 </h3>
                 <p className="text-xs sm:text-sm text-gray-600 truncate">
-                  Patient ID: {patientData.patientId}
+                  Health ID: {patientData.healthIdNumber || 'N/A'}
                 </p>
               </div>
             </div>

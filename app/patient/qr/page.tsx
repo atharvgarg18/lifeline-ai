@@ -2,68 +2,130 @@
 
 import { useEffect, useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
-import { Download, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react'
+import { Download, RefreshCw, AlertCircle, CheckCircle, User } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import toast from 'react-hot-toast'
+import { useRouter } from 'next/navigation'
+
+interface PatientInfo {
+  userId: string
+  healthIdNumber: string
+  name: string
+  email: string
+  phone: string
+}
+
+interface QRData {
+  qrCodeId: string
+  qrData: string
+  expiresAt: string
+  generatedAt: string
+  status: string
+  patientInfo: PatientInfo
+}
 
 export default function PatientQRPage() {
-  const [qrData, setQrData] = useState<any>(null)
+  const [qrData, setQrData] = useState<QRData | null>(null)
   const [loading, setLoading] = useState(false)
-  const [patientId, setPatientId] = useState<string>('')
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [checking, setChecking] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
-    // Get patient ID from auth/session
-    const mockPatientId = 'PAT-001' // Replace with actual auth
-    setPatientId(mockPatientId)
-    
-    // Check for existing valid QR
-    loadExistingQR(mockPatientId)
+    checkAuthAndLoadQR()
   }, [])
 
-  const loadExistingQR = async (patientId: string) => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1'}/patient-profile/patients/${patientId}/qr/active`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        }
-      )
-
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success && data.data) {
-          setQrData(data.data)
-        } else {
-          // No active QR, generate new one
-          generateNewQR(patientId)
-        }
-      } else {
-        generateNewQR(patientId)
-      }
-    } catch (error) {
-      console.error('Failed to load QR:', error)
-      generateNewQR(patientId)
+  const checkAuthAndLoadQR = async () => {
+    const token = localStorage.getItem('ll_token')
+    
+    if (!token) {
+      toast.error('Please login to generate QR code')
+      router.push('/login')
+      return
     }
+
+    setIsAuthenticated(true)
+    setChecking(false)
+    
+    // Try to load existing active QR
+    await loadExistingQR(token)
   }
 
-  const generateNewQR = async (patientId: string) => {
-    setLoading(true)
+  const loadExistingQR = async (token: string) => {
     try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1'
+      
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1'}/patient-profile/patients/${patientId}/qr/generate`,
+        `${API_URL}/patient-profile/qr/active`,
         {
-          method: 'POST',
           headers: {
+            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         }
       )
 
       if (!response.ok) {
-        throw new Error('Failed to generate QR code')
+        if (response.status === 401) {
+          // Token expired or invalid
+          localStorage.removeItem('ll_token')
+          localStorage.removeItem('ll_user')
+          toast.error('Session expired. Please login again')
+          router.push('/login')
+          return
+        }
+        throw new Error('Failed to load QR code')
+      }
+
+      const data = await response.json()
+      
+      if (data.success && data.data) {
+        setQrData(data.data)
+      } else {
+        // No active QR, generate new one
+        await generateNewQR(token)
+      }
+    } catch (error: any) {
+      console.error('Failed to load QR:', error)
+      // If no existing QR, generate new one
+      await generateNewQR(token)
+    }
+  }
+
+  const generateNewQR = async (token?: string) => {
+    const authToken = token || localStorage.getItem('ll_token')
+    
+    if (!authToken) {
+      toast.error('Please login to generate QR code')
+      router.push('/login')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1'
+      
+      const response = await fetch(
+        `${API_URL}/patient-profile/qr/generate`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem('ll_token')
+          localStorage.removeItem('ll_user')
+          toast.error('Session expired. Please login again')
+          router.push('/login')
+          return
+        }
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to generate QR code')
       }
 
       const data = await response.json()
@@ -83,9 +145,7 @@ export default function PatientQRPage() {
   }
 
   const handleRefreshQR = () => {
-    if (patientId) {
-      generateNewQR(patientId)
-    }
+    generateNewQR()
   }
 
   const handleDownloadQR = () => {
@@ -102,7 +162,7 @@ export default function PatientQRPage() {
     // Create download link
     const link = document.createElement('a')
     link.href = url
-    link.download = `patient-qr-${patientId}.svg`
+    link.download = `lifeline-qr-${qrData.patientInfo.healthIdNumber}.svg`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -117,6 +177,21 @@ export default function PatientQRPage() {
     const now = Date.now()
     const hoursRemaining = (expiryTime - now) / (1000 * 60 * 60)
     return hoursRemaining < 6 // Less than 6 hours
+  }
+
+  if (checking) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="spinner mb-4"></div>
+          <p className="text-gray-600">Checking authentication...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return null // Will redirect to login
   }
 
   return (
@@ -136,7 +211,10 @@ export default function PatientQRPage() {
         <div className="bg-white rounded-2xl shadow-xl border-2 border-gray-200 overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center py-20">
-              <div className="spinner"></div>
+              <div className="text-center">
+                <div className="spinner mb-4"></div>
+                <p className="text-gray-600">Generating your QR code...</p>
+              </div>
             </div>
           ) : qrData ? (
             <>
@@ -163,6 +241,19 @@ export default function PatientQRPage() {
                 </div>
               )}
 
+              {/* Patient Info Banner */}
+              <div className="bg-primary-50 border-b border-primary-200 px-6 py-4">
+                <div className="flex items-center">
+                  <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mr-3">
+                    <User className="w-6 h-6 text-primary-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900">{qrData.patientInfo.name}</h3>
+                    <p className="text-sm text-gray-600">Health ID: {qrData.patientInfo.healthIdNumber}</p>
+                  </div>
+                </div>
+              </div>
+
               {/* QR Code Display */}
               <div className="p-8">
                 <div className="bg-white p-6 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
@@ -188,10 +279,19 @@ export default function PatientQRPage() {
 
                   <div className="flex items-center justify-between py-3 border-b border-gray-200">
                     <span className="text-sm font-medium text-gray-600">
-                      Patient ID
+                      Patient Name
+                    </span>
+                    <span className="text-sm font-bold text-gray-900">
+                      {qrData.patientInfo.name}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between py-3 border-b border-gray-200">
+                    <span className="text-sm font-medium text-gray-600">
+                      Health ID
                     </span>
                     <span className="text-sm font-mono font-bold text-gray-900">
-                      {patientId}
+                      {qrData.patientInfo.healthIdNumber}
                     </span>
                   </div>
 
@@ -250,7 +350,8 @@ export default function PatientQRPage() {
               <p className="text-gray-600 mb-4">No active QR code found</p>
               <button
                 onClick={handleRefreshQR}
-                className="px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors"
+                disabled={loading}
+                className="px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50"
               >
                 Generate QR Code
               </button>
@@ -281,8 +382,9 @@ export default function PatientQRPage() {
               <p className="font-medium mb-1">Security Notice:</p>
               <p>
                 This QR code is uniquely encrypted with HMAC-SHA256 signature
-                and can only be scanned by authorized LifeLine hospitals. Each
-                code is valid for 24 hours and can only be used once for admission.
+                and contains your actual patient information. It can only be scanned 
+                by authorized LifeLine hospitals. Each code is valid for 24 hours and 
+                can only be used once for admission.
               </p>
             </div>
           </div>
