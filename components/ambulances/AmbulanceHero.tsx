@@ -27,7 +27,7 @@ const stats = [
   {
     icon: Truck,
     value: "58",
-    label: "Trucks Available",
+    label: "Ambulance Available",
     sub: "Ready to respond",
     color: "text-blue-600",
     bg: "bg-blue-50",
@@ -75,7 +75,7 @@ const highlights = [
   {
     icon: Shield,
     label: "NABH Certified",
-    sub: "Certified Trucks",
+    sub: "Certified Ambulance",
     color: "text-emerald-600",
     bg: "bg-emerald-50",
   },
@@ -95,7 +95,7 @@ const highlights = [
   },
 ];
 
-export default function TruckHero() {
+export default function AmbulanceHero() {
   return (
     <section className="w-full space-y-6">
       {/* Hero Card */}
@@ -134,7 +134,7 @@ export default function TruckHero() {
               custom={2}
               className="text-3xl md:text-4xl font-bold text-white leading-tight"
             >
-              Emergency Truck
+              Emergency Ambulance
               <br />
               <span className="text-blue-200">Services</span>
             </motion.h1>
@@ -144,7 +144,7 @@ export default function TruckHero() {
               custom={3}
               className="text-blue-100 text-base leading-relaxed max-w-md"
             >
-              Book and track Trucks in real-time for emergency and
+              Book and track Ambulance in real-time for emergency and
               non-emergency medical transport. We're here to reach you in time.
             </motion.p>
           </div>
@@ -163,7 +163,7 @@ export default function TruckHero() {
               <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-red-50">
                 <Truck className="h-4 w-4 text-red-600" />
               </span>
-              Request Truck
+              Request Ambulance
               <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
             </motion.button>
             <p className="text-blue-200/80 text-xs">
@@ -180,7 +180,7 @@ export default function TruckHero() {
           className="relative mt-8 flex flex-wrap gap-4 border-t border-white/10 pt-6"
         >
           {[
-            "120+ Trucks city-wide",
+            "120+ Ambulance city-wide",
             "NABH Certified",
             "4.8 ★ avg rating",
             "2.4k+ reviews",
