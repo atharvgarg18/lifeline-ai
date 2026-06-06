@@ -59,7 +59,7 @@ const services = [
     id: "icu",
     icon: Stethoscope,
     emoji: "🏥",
-    title: "ICU Truck",
+    title: "ICU Ambulance",
     short: "ICU",
     desc: "Mobile intensive care unit with ventilator, infusion pumps, and specialist nurses for inter-hospital transfers.",
     badge: "Intensive Care",
@@ -76,7 +76,7 @@ const services = [
     id: "air",
     icon: Wind,
     emoji: "🚁",
-    title: "Air Truck",
+    title: "Air Ambulance",
     short: "AIR",
     desc: "Helicopter and fixed-wing air transport for long-distance or terrain-inaccessible emergency evacuations.",
     badge: "Fast Transfers",
@@ -106,7 +106,7 @@ const steps = [
   {
     num: 2,
     icon: Truck,
-    title: "Select Truck Type",
+    title: "Select Ambulance Type",
     desc: "AI matches you with the best available unit — BLS, ALS, ICU, or Air based on patient condition.",
     color: "text-violet-600",
     bg: "bg-violet-50",
@@ -117,7 +117,7 @@ const steps = [
   {
     num: 3,
     icon: Navigation,
-    title: "Track Truck Live",
+    title: "Track Ambulance Live",
     desc: "Follow real-time GPS location, receive ETA updates, and stay connected with the paramedic team.",
     color: "text-emerald-600",
     bg: "bg-emerald-50",
@@ -158,7 +158,7 @@ function FadeInView({ children, delay = 0, className = "" }: { children: React.R
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 
-export default function TruckSection4() {
+export default function AmbulanceSection4() {
   return (
     <section className="w-full space-y-6">
 
@@ -173,7 +173,7 @@ export default function TruckSection4() {
                 <ShieldPlus className="h-4 w-4 text-blue-600" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-slate-800">Our Truck Services</h2>
+                <h2 className="text-base font-bold text-slate-800">Our Ambulance Services</h2>
                 <p className="text-xs text-slate-400 mt-0.5">Comprehensive fleet for every medical need</p>
               </div>
             </div>
