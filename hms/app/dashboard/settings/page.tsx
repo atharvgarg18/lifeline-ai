@@ -1,6 +1,6 @@
 'use client'
 
-import { Settings as SettingsIcon, Hospital, Bell, Shield } from 'lucide-react'
+import { Hospital, Bell, Shield } from 'lucide-react'
 
 export default function SettingsPage() {
   return (

@@ -5,7 +5,7 @@
  */
 
 import type { EmergencySOS, TimelineEntry } from '@shared/types';
-
+import { EmergencySosModel } from './models/EmergencySos.model';
 
 // Placeholder - In real implementation, this would use mongoose
 interface IEmergencySosRepository {
@@ -23,61 +23,66 @@ export class EmergencySosRepository implements IEmergencySosRepository {
    * Create new emergency
    */
   public async create(emergency: EmergencySOS): Promise<EmergencySOS> {
-    // TODO: Implement with Mongoose
-    // const doc = new EmergencySOS(emergency);
-    // return await doc.save();
-    return emergency;
+    const doc = new EmergencySosModel(emergency);
+    const saved = await doc.save();
+    return saved.toObject() as EmergencySOS;
   }
 
   /**
    * Find emergency by ID
    */
   public async findById(id: string): Promise<EmergencySOS | null> {
-    // TODO: Implement with Mongoose
-    // return await EmergencySOS.findById(id);
-    return null;
+    const doc = await EmergencySosModel.findById(id);
+    return doc ? (doc.toObject() as EmergencySOS) : null;
+  }
+
+  /**
+   * Find one emergency by query
+   */
+  public async findOne(query: any): Promise<EmergencySOS | null> {
+    const doc = await EmergencySosModel.findOne(query).sort({ createdAt: -1 });
+    return doc ? (doc.toObject() as EmergencySOS) : null;
   }
 
   /**
    * Update emergency
    */
   public async update(id: string, emergency: EmergencySOS): Promise<EmergencySOS> {
-    // TODO: Implement with Mongoose
-    // return await EmergencySOS.findByIdAndUpdate(id, emergency, { new: true });
-    return emergency;
+    const doc = await EmergencySosModel.findByIdAndUpdate(id, emergency, { new: true });
+    if (!doc) {
+      throw new Error(`Emergency with ID ${id} not found`);
+    }
+    return doc.toObject() as EmergencySOS;
   }
 
   /**
    * Find recent emergency for user (duplicate check)
    */
   public async findRecentByUserId(userId: string, timeWindowMs: number): Promise<EmergencySOS | null> {
-    // TODO: Implement with Mongoose
-    // const since = new Date(Date.now() - timeWindowMs);
-    // return await EmergencySOS.findOne({
-    //   patientId: userId,
-    //   createdAt: { $gte: since }
-    // }).sort({ createdAt: -1 });
-    return null;
+    const since = new Date(Date.now() - timeWindowMs);
+    const doc = await EmergencySosModel.findOne({
+      patientId: userId,
+      createdAt: { $gte: since }
+    }).sort({ createdAt: -1 });
+    return doc ? (doc.toObject() as EmergencySOS) : null;
   }
 
   /**
    * Add entry to timeline
    */
   public async addTimeline(emergencyId: string, entry: TimelineEntry): Promise<void> {
-    // TODO: Implement with Mongoose
-    // await EmergencySOS.findByIdAndUpdate(
-    //   emergencyId,
-    //   { $push: { timeline: entry } }
-    // );
+    await EmergencySosModel.findByIdAndUpdate(
+      emergencyId,
+      { $push: { timeline: entry } }
+    );
   }
 
   /**
    * Find emergencies by status
    */
   public async findByStatus(status: string, limit = 100): Promise<EmergencySOS[]> {
-    // TODO: Implement with Mongoose
-    // return await EmergencySOS.find({ status }).limit(limit);
-    return [];
+    const docs = await EmergencySosModel.find({ status }).limit(limit);
+    return docs.map(doc => doc.toObject() as EmergencySOS);
   }
 
   /**
@@ -88,18 +93,8 @@ export class EmergencySosRepository implements IEmergencySosRepository {
     longitude: number,
     radiusKm: number
   ): Promise<EmergencySOS[]> {
-    // TODO: Implement with Mongoose geospatial queries
-    // return await EmergencySOS.find({
-    //   location: {
-    //     $near: {
-    //       $geometry: {
-    //         type: 'Point',
-    //         coordinates: [longitude, latitude]
-    //       },
-    //       $maxDistance: radiusKm * 1000
-    //     }
-    //   }
-    // });
+    // TODO: Implement geospatial queries
+    // This requires the location field to have a geospatial index
     return [];
   }
 }

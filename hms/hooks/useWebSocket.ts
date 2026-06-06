@@ -4,6 +4,7 @@ import { useEmergencyStore } from '@/store/emergencyStore'
 import toast from 'react-hot-toast'
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000'
+const HOSPITAL_ID = process.env.NEXT_PUBLIC_HOSPITAL_ID || 'HOSP-001'
 
 export function useWebSocket() {
   const socketRef = useRef<Socket | null>(null)
@@ -14,8 +15,11 @@ export function useWebSocket() {
       return
     }
 
+    console.log('🔌 Connecting to:', SOCKET_URL)
+    console.log('🏥 Hospital ID:', HOSPITAL_ID)
+
     const socket = io(SOCKET_URL, {
-      transports: ['websocket'],
+      transports: ['websocket', 'polling'], // Allow polling fallback
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionAttempts: 5,
@@ -26,12 +30,17 @@ export function useWebSocket() {
     // Connection events
     socket.on('connect', () => {
       console.log('✅ Connected to WebSocket server')
+      console.log('🔑 Socket ID:', socket.id)
       
       // Join hospital room
-      const hospitalId = process.env.NEXT_PUBLIC_HOSPITAL_ID || 'HOSP-001'
-      socket.emit('hospital:join', hospitalId)
+      console.log('📡 Joining hospital room:', HOSPITAL_ID)
+      socket.emit('hospital:join', HOSPITAL_ID)
       
       toast.success('Connected to server')
+    })
+
+    socket.on('hospital:joined', (data) => {
+      console.log('✅ Hospital joined room successfully:', data)
     })
 
     socket.on('disconnect', () => {
@@ -40,7 +49,7 @@ export function useWebSocket() {
     })
 
     socket.on('connect_error', (error) => {
-      console.error('Connection error:', error)
+      console.error('❌ Connection error:', error)
       toast.error('Failed to connect to server')
     })
 

@@ -138,6 +138,25 @@ export function useQRScanner(
 
     setError(null);
 
+    // Wait for element to be available (with retries)
+    let element = document.getElementById(elementId);
+    let retries = 0;
+    const maxRetries = 10;
+    
+    while (!element && retries < maxRetries) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      element = document.getElementById(elementId);
+      retries++;
+    }
+
+    if (!element) {
+      console.error(`Element with id=${elementId} not found after ${maxRetries} retries`);
+      setError('Scanner element not found. Please refresh the page.');
+      return;
+    }
+
+    console.log(`✅ Scanner element found: ${elementId}`);
+
     // Request permission first
     const permitted = await requestPermission();
     if (!permitted) return;
@@ -198,9 +217,9 @@ export function useQRScanner(
     }
   }, [
     isScanning,
+    elementId,
     requestPermission,
     getCameras,
-    elementId,
     currentCamera,
     finalConfig,
     onScan,

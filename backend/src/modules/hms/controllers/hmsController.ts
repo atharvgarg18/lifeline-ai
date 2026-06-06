@@ -191,14 +191,95 @@ export class HMSController {
         throw new AppError('Missing required fields', 400);
       }
 
-      const result = await EmergencyDispatchService.acceptEmergency(
-        requestId,
+      // Use EmergencySOS model instead of EmergencyRequest
+      const { EmergencySosModel } = await import('../../emergency-sos/models/EmergencySos.model');
+      const { Bed } = await import('../models/Bed.model');
+      const { Hospital } = await import('../models/Hospital.model');
+      
+      // Find emergency
+      const emergency = await EmergencySosModel.findById(requestId);
+      
+      if (!emergency) {
+        throw new AppError('Emergency not found', 404);
+      }
+
+      if (emergency.status !== 'INITIATED' && emergency.status !== 'DISPATCHED') {
+        throw new AppError('Emergency is no longer pending', 400);
+      }
+
+      // Verify bed availability
+      const bed = await Bed.findOne({
+        bedId,
         hospitalId,
-        bedId
-      );
+        status: 'AVAILABLE',
+      });
+
+      if (!bed) {
+        throw new AppError('Selected bed is not available', 400);
+      }
+
+      // Get hospital details
+      const hospital = await Hospital.findOne({ hospitalId });
+
+      if (!hospital) {
+        throw new AppError('Hospital not found', 404);
+      }
+
+      // Update emergency status
+      emergency.status = 'HOSPITAL_NOTIFIED';
+      emergency.assignedHospitalId = hospitalId;
+      emergency.assignedAmbulanceId = undefined; // TODO: Assign ambulance
+      
+      // Add timeline entry
+      emergency.timeline.push({
+        status: 'HOSPITAL_NOTIFIED',
+        timestamp: new Date().toISOString(),
+        note: `Accepted by ${hospital.name}, Bed ${bed.bedNumber} allocated`,
+      });
+
+      await emergency.save();
+
+      // Allocate bed
+      bed.status = 'OCCUPIED';
+      bed.currentPatientId = emergency.patientId;
+      bed.currentAdmissionId = requestId; // Using emergency ID as admission ID for now
+      await bed.save();
+
+      // Emit WebSocket event to patient
+      const io = (global as any).io;
+      if (io) {
+        io.to(`emergency:${requestId}`).emit('emergency:accepted', {
+          emergencyId: requestId,
+          hospitalId,
+          hospitalName: hospital.name,
+          bedId,
+          bedNumber: bed.bedNumber,
+          ward: bed.ward,
+          floor: bed.floor,
+          eta: 30, // minutes
+        });
+      }
+
+      // Emit to other hospitals that request was accepted
+      const hospitalIds = ['HOSP-001', 'HOSP-002', 'HOSP-003', 'HOSP-004', 'HOSP-005'];
+      hospitalIds.forEach((hId) => {
+        if (hId !== hospitalId && io) {
+          io.to(`hospital:${hId}`).emit('emergency:accepted_by_other', {
+            requestId,
+            hospitalId,
+            hospitalName: hospital.name,
+          });
+        }
+      });
 
       res.json(
-        successResponse(result, 'Emergency accepted successfully')
+        successResponse({
+          emergencyId: requestId,
+          hospitalId,
+          bedId,
+          bedNumber: bed.bedNumber,
+          status: 'ACCEPTED',
+        }, 'Emergency accepted successfully')
       );
     } catch (error) {
       next(error);
@@ -221,11 +302,30 @@ export class HMSController {
         throw new AppError('Request ID and Hospital ID are required', 400);
       }
 
-      await EmergencyDispatchService.rejectEmergency(
-        requestId,
-        hospitalId,
-        reason || 'No reason provided'
-      );
+      // Use EmergencySOS model
+      const { EmergencySosModel } = await import('../../emergency-sos/models/EmergencySos.model');
+      
+      // Find emergency
+      const emergency = await EmergencySosModel.findById(requestId);
+      
+      if (!emergency) {
+        throw new AppError('Emergency not found', 404);
+      }
+
+      if (emergency.status !== 'INITIATED' && emergency.status !== 'DISPATCHED') {
+        throw new AppError('Emergency is no longer pending', 400);
+      }
+
+      // Add timeline entry
+      emergency.timeline.push({
+        status: emergency.status, // Keep current status
+        timestamp: new Date().toISOString(),
+        note: `Rejected by ${hospitalId}: ${reason || 'No reason provided'}`,
+      });
+
+      await emergency.save();
+
+      // TODO: If all hospitals reject, escalate or try next batch
 
       res.json(
         successResponse(null, 'Emergency rejected')

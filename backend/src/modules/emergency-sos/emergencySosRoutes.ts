@@ -17,6 +17,15 @@ const router = Router();
 router.use(authenticate);
 
 /**
+ * GET /api/v1/emergency/active
+ * Get active emergency for current user
+ */
+router.get(
+  '/active',
+  emergencySosController.getActiveEmergency.bind(emergencySosController)
+);
+
+/**
  * POST /api/v1/emergency/sos/trigger
  * Trigger new emergency SOS
  * Body: { emergencyType, location, latitude, longitude, description?, severityScore? }

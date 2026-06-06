@@ -287,7 +287,7 @@ export default function HospitalsPage() {
 
             <div className="md:col-span-2 flex items-end">
               <div className="text-sm text-gray-600">
-                <p className="font-medium">Real-time data from Google Maps</p>
+                <p className="font-medium">Real-time data from OpenStreetMap (FREE!)</p>
                 <p>Showing results within {filter.radius / 1000} km of your location</p>
               </div>
             </div>

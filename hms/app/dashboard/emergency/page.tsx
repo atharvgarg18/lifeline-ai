@@ -8,7 +8,7 @@ import { Clock, MapPin, AlertCircle, Activity, Check, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function EmergencyPage() {
-  const { pendingRequests } = useEmergencyStore()
+  const { pendingRequests, removeRequest } = useEmergencyStore()
   const [selectedRequest, setSelectedRequest] = useState<any>(null)
   const [availableBeds, setAvailableBeds] = useState<any[]>([])
   const [selectedBed, setSelectedBed] = useState<string>('')
@@ -65,10 +65,15 @@ export default function EmergencyPage() {
       )
 
       toast.success('Emergency accepted successfully!')
+      
+      // Remove from store
+      removeRequest(selectedRequest.requestId)
+      
       setSelectedRequest(null)
       setSelectedBed('')
     } catch (error) {
       console.error('Failed to accept emergency:', error)
+      toast.error('Failed to accept emergency')
     } finally {
       setAccepting(false)
     }
@@ -92,10 +97,15 @@ export default function EmergencyPage() {
       )
 
       toast.success('Emergency rejected')
+      
+      // Remove from store
+      removeRequest(selectedRequest.requestId)
+      
       setSelectedRequest(null)
       setRejectReason('')
     } catch (error) {
       console.error('Failed to reject emergency:', error)
+      toast.error('Failed to reject emergency')
     } finally {
       setRejecting(false)
     }

@@ -8,6 +8,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { createServer } from 'http';
+import { Server as SocketIOServer } from 'socket.io';
 
 // Config
 import { ENV } from './config/env';
@@ -30,6 +31,55 @@ import hmsRoutes from './modules/hms/routes/hmsRoutes';
 
 const app = express();
 const httpServer = createServer(app);
+
+// ── Socket.io Setup ───────────────────────────────────────────────
+const io = new SocketIOServer(httpServer, {
+  cors: {
+    origin: [
+      ENV.FRONTEND_URL,
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:3002', // HMS App
+    ],
+    credentials: true,
+    methods: ['GET', 'POST'],
+  },
+  transports: ['websocket', 'polling'],
+});
+
+// Store Socket.io instance globally for services to use
+(global as any).io = io;
+
+// Socket.io connection handling
+io.on('connection', (socket) => {
+  console.log('🔌 Client connected:', socket.id);
+
+  // Hospital joins their room
+  socket.on('hospital:join', (hospitalId: string) => {
+    socket.join(`hospital:${hospitalId}`);
+    console.log(`🏥 Hospital ${hospitalId} joined room`);
+    socket.emit('hospital:joined', { hospitalId, success: true });
+  });
+
+  // Hospital leaves their room
+  socket.on('hospital:leave', (hospitalId: string) => {
+    socket.leave(`hospital:${hospitalId}`);
+    console.log(`🏥 Hospital ${hospitalId} left room`);
+  });
+
+  // Patient joins emergency room (for status updates)
+  socket.on('emergency:join', (emergencyId: string) => {
+    socket.join(`emergency:${emergencyId}`);
+    console.log(`🚨 Patient joined emergency room: ${emergencyId}`);
+  });
+
+  // Disconnect
+  socket.on('disconnect', () => {
+    console.log('❌ Client disconnected:', socket.id);
+  });
+});
+
+console.log('✅ Socket.io initialized');
 
 // ── Security ──────────────────────────────────────────────────────
 app.use(helmet({
@@ -210,4 +260,4 @@ const bootstrap = async () => {
 
 bootstrap();
 
-export { app, httpServer };
+export { app, httpServer, io };

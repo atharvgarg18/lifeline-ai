@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useQRScanner } from '@/hooks/useQRScanner'
 import { hmsApi } from '@/services/hmsApi'
 import toast from 'react-hot-toast'
@@ -9,6 +9,8 @@ import { Camera, User, AlertCircle, CheckCircle, X, FlashlightOff, Flashlight, S
 
 export default function QRScannerPage() {
   const [patientData, setPatientData] = useState<any>(null)
+  const [shouldShowScanner, setShouldShowScanner] = useState(false)
+  const scannerInitializedRef = useRef(false)
   const router = useRouter()
 
   const {
@@ -45,6 +47,7 @@ export default function QRScannerPage() {
             ...response.data.patient,
             qrCodeId: response.data.qrCodeId,
           })
+          setShouldShowScanner(false)
           toast.success('✓ Patient verified successfully', {
             duration: 3000,
             icon: '✓',
@@ -65,19 +68,70 @@ export default function QRScannerPage() {
     }
   )
 
-  const handleQuickAdmit = () => {
-    if (!patientData) return
-    const params = new URLSearchParams({
-      patientId: patientData.patientId,
-      qrCodeId: patientData.qrCodeId,
-    })
-    router.push(`/dashboard/admissions/quick-admit?${params}`)
-  }
-
   const handleStartScanning = () => {
     resetError()
     setPatientData(null)
-    startScanning()
+    setShouldShowScanner(true)
+  }
+
+  // Auto-start scanner when element is rendered
+  useEffect(() => {
+    if (shouldShowScanner && !scannerInitializedRef.current && !isScanning) {
+      scannerInitializedRef.current = true
+      // Give React time to render the qr-reader div
+      setTimeout(() => {
+        console.log('🎥 Starting scanner...')
+        startScanning()
+      }, 200)
+    }
+    
+    if (!shouldShowScanner) {
+      scannerInitializedRef.current = false
+    }
+  }, [shouldShowScanner, isScanning, startScanning])
+
+  const handleStopScanning = async () => {
+    await stopScanning()
+    setShouldShowScanner(false)
+  }
+
+  const handleQuickAdmit = async () => {
+    if (!patientData) return
+
+    const loadingToast = toast.loading('Processing admission...')
+
+    try {
+      const hospitalId = process.env.NEXT_PUBLIC_HOSPITAL_ID || 'HOSP-001'
+      
+      // Call quick admit API
+      const response = await hmsApi.post('/admissions/quick', {
+        patientId: patientData._id || patientData.id,
+        qrCodeId: patientData.qrCodeId,
+        hospitalId: hospitalId,
+        admissionType: 'Emergency',
+        bedType: 'General',
+      })
+
+      toast.dismiss(loadingToast)
+
+      if (response.success) {
+        toast.success('✓ Patient admitted successfully', {
+          duration: 4000,
+          icon: '✓',
+        })
+        
+        // Navigate to patient details or admissions list
+        setTimeout(() => {
+          router.push('/dashboard/admissions')
+        }, 1500)
+      } else {
+        toast.error(response.message || 'Failed to admit patient')
+      }
+    } catch (error: any) {
+      toast.dismiss(loadingToast)
+      console.error('Admission failed:', error)
+      toast.error(error.response?.data?.message || 'Failed to admit patient')
+    }
   }
 
   return (
@@ -154,50 +208,54 @@ export default function QRScannerPage() {
       )}
 
       {/* Scanner */}
-      {isScanning && (
+      {shouldShowScanner && (
         <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
           <div className="flex flex-col items-center space-y-4">
             <div className="w-full max-w-lg relative">
               <div id="qr-reader" className="rounded-lg overflow-hidden"></div>
               
               {/* Scanner Controls */}
-              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center space-x-3 z-10">
-                {/* Torch/Flashlight Toggle */}
-                <button
-                  onClick={toggleTorch}
-                  className="p-3 bg-black bg-opacity-60 text-white rounded-full hover:bg-opacity-80 transition-all shadow-lg"
-                  title={isTorchOn ? 'Turn off flashlight' : 'Turn on flashlight'}
-                >
-                  {isTorchOn ? (
-                    <Flashlight className="w-5 h-5" />
-                  ) : (
-                    <FlashlightOff className="w-5 h-5" />
-                  )}
-                </button>
-
-                {/* Camera Switch */}
-                {cameras.length > 1 && (
+              {isScanning && (
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center space-x-3 z-10">
+                  {/* Torch/Flashlight Toggle */}
                   <button
-                    onClick={switchCamera}
+                    onClick={toggleTorch}
                     className="p-3 bg-black bg-opacity-60 text-white rounded-full hover:bg-opacity-80 transition-all shadow-lg"
-                    title="Switch camera"
+                    title={isTorchOn ? 'Turn off flashlight' : 'Turn on flashlight'}
                   >
-                    <SwitchCamera className="w-5 h-5" />
+                    {isTorchOn ? (
+                      <Flashlight className="w-5 h-5" />
+                    ) : (
+                      <FlashlightOff className="w-5 h-5" />
+                    )}
                   </button>
-                )}
-              </div>
+
+                  {/* Camera Switch */}
+                  {cameras.length > 1 && (
+                    <button
+                      onClick={switchCamera}
+                      className="p-3 bg-black bg-opacity-60 text-white rounded-full hover:bg-opacity-80 transition-all shadow-lg"
+                      title="Switch camera"
+                    >
+                      <SwitchCamera className="w-5 h-5" />
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
             
             <div className="text-center text-sm text-gray-600 space-y-2">
               <p className="font-medium">📷 Position QR code within the frame</p>
               <p className="text-xs">Scanner will automatically detect and verify the code</p>
-              <p className="text-xs text-gray-500">
-                {cameras.length} camera(s) available
-              </p>
+              {cameras.length > 0 && (
+                <p className="text-xs text-gray-500">
+                  {cameras.length} camera(s) available
+                </p>
+              )}
             </div>
 
             <button
-              onClick={stopScanning}
+              onClick={handleStopScanning}
               className="flex items-center space-x-2 px-6 py-2 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors"
             >
               <X className="w-4 h-4" />

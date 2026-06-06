@@ -59,15 +59,12 @@ class PlacesService {
       openNow?: boolean;
     }
   ): Promise<PlaceResult[]> {
-    const tags = options?.emergency
-      ? ['amenity=hospital', 'emergency=yes']
-      : ['amenity=hospital', 'amenity=clinic'];
-
+    // Use simpler tag query - just search for hospitals
     return this.nearbySearch({
       location,
       radius,
       type: 'hospital',
-      keyword: tags.join('|'),
+      keyword: 'amenity=hospital',
       minRating: options?.minRating,
       openNow: options?.openNow,
     });
@@ -101,10 +98,11 @@ class PlacesService {
     location: Coordinates,
     radius: number = 15000
   ): Promise<PlaceResult[]> {
+    // Search for hospitals (many have ambulance services)
     return this.nearbySearch({
       location,
       radius,
-      keyword: 'emergency=ambulance_station|amenity=hospital',
+      keyword: 'amenity=hospital',
     });
   }
 
@@ -178,32 +176,67 @@ class PlacesService {
     const { location, radius, keyword } = params;
     const radiusInMeters = radius;
 
-    // Parse keywords into OSM tags
-    let tagFilters = '';
-    if (keyword) {
+    console.log('🔍 Building Overpass query:');
+    console.log('  Location:', location);
+    console.log('  Radius:', radiusInMeters, 'meters');
+    console.log('  Keyword:', keyword);
+
+    // Build query based on keyword
+    // For OR queries (multiple options), split by |
+    // For AND queries (must have all), split by &
+    let nodeQuery = '';
+    let wayQuery = '';
+
+    if (keyword && keyword.includes('|')) {
+      // OR query - search for multiple tag combinations
       const tags = keyword.split('|');
-      tagFilters = tags.map(tag => {
+      const queries = tags.map(tag => {
         if (tag.includes('=')) {
           const [key, value] = tag.split('=');
-          return `["${key}"="${value}"]`;
+          return `node["${key}"="${value}"](around:${radiusInMeters},${location.latitude},${location.longitude});
+          way["${key}"="${value}"](around:${radiusInMeters},${location.latitude},${location.longitude});`;
         }
         return '';
-      }).join('');
+      }).filter(q => q).join('\n');
+      
+      const query = `
+        [out:json][timeout:25];
+        (
+          ${queries}
+        );
+        out center;
+      `;
+      
+      console.log('📝 Query:', query);
+      return query.trim();
+    } else if (keyword && keyword.includes('=')) {
+      // Single tag query
+      const [key, value] = keyword.split('=');
+      
+      const query = `
+        [out:json][timeout:25];
+        (
+          node["${key}"="${value}"](around:${radiusInMeters},${location.latitude},${location.longitude});
+          way["${key}"="${value}"](around:${radiusInMeters},${location.latitude},${location.longitude});
+        );
+        out center;
+      `;
+      
+      console.log('📝 Query:', query);
+      return query.trim();
     }
 
-    // Overpass QL query
+    // Fallback - search all nodes/ways
     const query = `
       [out:json][timeout:25];
       (
-        node${tagFilters}(around:${radiusInMeters},${location.latitude},${location.longitude});
-        way${tagFilters}(around:${radiusInMeters},${location.latitude},${location.longitude});
-        relation${tagFilters}(around:${radiusInMeters},${location.latitude},${location.longitude});
+        node(around:${radiusInMeters},${location.latitude},${location.longitude});
+        way(around:${radiusInMeters},${location.latitude},${location.longitude});
       );
-      out body;
-      >;
-      out skel qt;
+      out center;
     `;
-
+    
+    console.log('📝 Query:', query);
     return query.trim();
   }
 
