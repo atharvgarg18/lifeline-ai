@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   User, Heart, Activity, Thermometer, Droplets, Shield, Phone, Mail,
@@ -12,6 +12,8 @@ import {
   BedDouble, ClipboardList, UserCheck, Flame, ChevronRight,
   ChevronLeft
 } from "lucide-react";
+import { getMedicalHistory, getProfile } from "@/lib/patientApi";
+import { useAuth } from "@/context/AuthContext";
 import {
   LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine
@@ -51,32 +53,76 @@ interface Prescription {
   startDate: string;
 }
 
+interface LabReport {
+  id: number;
+  name: string;
+  date: string;
+  type: string;
+  status: string;
+  icon: any;
+}
+
+interface ActivityItem {
+  time: string;
+  event: string;
+  detail: string;
+  type: string;
+  color: string;
+}
+
+interface ProfileData {
+  healthIdNumber?: string;
+  bloodGroup?: string;
+  allergies?: string[];
+  chronicDiseases?: string[];
+  medications?: { name: string; dosage: string; frequency: string }[];
+  prescriptions?: { medicationName: string; dosage: string; frequency: string; prescribedBy: string; prescribedAt: string; duration?: string }[];
+  insuranceDetails?: { providerName?: string; coverageAmount?: number };
+}
+
+interface OverviewStats {
+  totalVisits: number;
+  emergencyCases: number;
+  admissions: number;
+  activeMeds: number;
+}
+
+interface HistoryRecord {
+  recordType: "EMERGENCY" | "APPOINTMENT" | "PRESCRIPTION";
+  createdAt?: string;
+  scheduledAt?: string;
+  prescribedAt?: string;
+  emergencyType?: string;
+  description?: string;
+  status?: string;
+  location?: { address?: string; city?: string; state?: string };
+  reason?: string;
+  specialization?: string;
+  medicationName?: string;
+  dosage?: string;
+  frequency?: string;
+  duration?: string;
+  prescribedBy?: string;
+  completedAt?: string;
+  estimatedArrivalTime?: number;
+}
+
+const formatDate = (value?: string) => {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+};
+
+const normalizeStatus = (status?: string): MedicalRecord["status"] => {
+  const lowered = (status || "").toLowerCase();
+  if (lowered.includes("critical")) return "critical";
+  if (lowered.includes("stable")) return "stable";
+  if (lowered.includes("complete") || lowered.includes("discharg")) return "completed";
+  return "ongoing";
+};
+
 // ─── Sample Data ──────────────────────────────────────────────────────────────
-
-const timelineEvents: TimelineEvent[] = [
-  { id: 1, date: "May 12, 2025", type: "emergency", title: "Cardiac Emergency", description: "Patient brought in with acute chest pain and shortness of breath. ECG showed ST-elevation. Immediate intervention required.", doctor: "Dr. Priya Sharma", hospital: "AIIMS Raipur", expanded: false },
-  { id: 2, date: "May 13, 2025", type: "admission", title: "ICU Admission", description: "Admitted to Cardiac ICU for 72-hour monitoring. Stabilization with IV medications. Continuous telemetry monitoring established.", doctor: "Dr. Rahul Mehta", hospital: "AIIMS Raipur", expanded: false },
-  { id: 3, date: "May 15, 2025", type: "treatment", title: "Angioplasty Procedure", description: "Successful percutaneous coronary intervention (PCI) performed. Stent placement in LAD artery. Procedure duration: 2h 15min.", doctor: "Dr. Priya Sharma", hospital: "AIIMS Raipur", expanded: false },
-  { id: 4, date: "May 22, 2025", type: "recovery", title: "Discharged & Recovery Phase", description: "Patient discharged with cardiac rehabilitation plan. Follow-up in 2 weeks. Medications prescribed and lifestyle modifications advised.", doctor: "Dr. Anjali Verma", hospital: "LifeLine Clinic Raipur", expanded: false },
-];
-
-const medicalRecords: MedicalRecord[] = [
-  { id: 1, date: "May 12, 2025", diagnosis: "Acute Myocardial Infarction", doctor: "Dr. Priya Sharma", hospital: "AIIMS Raipur", status: "completed" },
-  { id: 2, date: "Mar 5, 2025", diagnosis: "Hypertension Stage II", doctor: "Dr. Rahul Mehta", hospital: "LifeLine Clinic", status: "ongoing" },
-  { id: 3, date: "Jan 18, 2025", diagnosis: "Type 2 Diabetes Mellitus", doctor: "Dr. Anjali Verma", hospital: "Apollo Raipur", status: "ongoing" },
-  { id: 4, date: "Nov 22, 2024", diagnosis: "Lumbar Spondylosis", doctor: "Dr. Vikram Singh", hospital: "LifeLine Clinic", status: "stable" },
-  { id: 5, date: "Sep 9, 2024", diagnosis: "Community Acquired Pneumonia", doctor: "Dr. Priya Sharma", hospital: "AIIMS Raipur", status: "completed" },
-  { id: 6, date: "Jul 14, 2024", diagnosis: "Acute Bronchitis", doctor: "Dr. Rahul Mehta", hospital: "LifeLine Clinic", status: "completed" },
-];
-
-const prescriptions: Prescription[] = [
-  { id: 1, medication: "Aspirin", dosage: "75 mg", frequency: "Once daily", duration: "Lifelong", doctor: "Dr. Priya Sharma", status: "active", category: "Antiplatelet", startDate: "May 22, 2025" },
-  { id: 2, medication: "Atorvastatin", dosage: "40 mg", frequency: "Once at night", duration: "Lifelong", doctor: "Dr. Priya Sharma", status: "active", category: "Statin", startDate: "May 22, 2025" },
-  { id: 3, medication: "Metoprolol", dosage: "25 mg", frequency: "Twice daily", duration: "6 months", doctor: "Dr. Rahul Mehta", status: "active", category: "Beta Blocker", startDate: "May 13, 2025" },
-  { id: 4, medication: "Metformin", dosage: "500 mg", frequency: "Twice daily", duration: "Ongoing", doctor: "Dr. Anjali Verma", status: "active", category: "Antidiabetic", startDate: "Jan 18, 2025" },
-  { id: 5, medication: "Amlodipine", dosage: "5 mg", frequency: "Once daily", duration: "Ongoing", doctor: "Dr. Rahul Mehta", status: "active", category: "CCB", startDate: "Mar 5, 2025" },
-  { id: 6, medication: "Azithromycin", dosage: "500 mg", frequency: "Once daily", duration: "5 days", doctor: "Dr. Priya Sharma", status: "completed", category: "Antibiotic", startDate: "Sep 9, 2024" },
-];
 
 const heartRateData = [
   { time: "Mon", value: 88 }, { time: "Tue", value: 82 }, { time: "Wed", value: 79 },
@@ -94,29 +140,8 @@ const spo2Data = [
   { time: "Thu", value: 97 }, { time: "Fri", value: 98 }, { time: "Sat", value: 99 }, { time: "Sun", value: 98 },
 ];
 
-const emergencyHistory = [
-  { id: 1, type: "Cardiac Arrest (STEMI)", date: "May 12, 2025", location: "Home, Raipur", response: "8 min", hospital: "AIIMS Raipur", outcome: "Survived" },
-  { id: 2, type: "Hypertensive Crisis", date: "Nov 4, 2024", location: "Workplace", response: "12 min", hospital: "LifeLine Clinic", outcome: "Stabilized" },
-  { id: 3, type: "Hypoglycemic Episode", date: "Aug 19, 2024", location: "Mall, Raipur", response: "6 min", hospital: "Apollo Raipur", outcome: "Recovered" },
-];
-
-const labReports = [
-  { id: 1, name: "Complete Blood Count", date: "May 20, 2025", type: "Blood Test", status: "Normal", icon: FlaskConical },
-  { id: 2, name: "12-Lead ECG Report", date: "May 12, 2025", type: "ECG", status: "Abnormal", icon: Heart },
-  { id: 3, name: "Cardiac MRI", date: "May 16, 2025", type: "MRI", status: "Review", icon: Scan },
-  { id: 4, name: "Chest X-Ray", date: "May 12, 2025", type: "X-Ray", status: "Normal", icon: Radio },
-  { id: 5, name: "HbA1c Profile", date: "Apr 10, 2025", type: "Blood Test", status: "Borderline", icon: Microscope },
-  { id: 6, name: "Lipid Panel", date: "Apr 10, 2025", type: "Blood Test", status: "Abnormal", icon: FlaskConical },
-];
-
-const recentActivity = [
-  { time: "2h ago", event: "Lab Report Updated", detail: "Lipid panel results uploaded by Dr. Priya Sharma", type: "lab", color: "#5373A5" },
-  { time: "1d ago", event: "Prescription Renewed", detail: "Metoprolol 25mg renewed for 3 months", type: "prescription", color: "#22c55e" },
-  { time: "3d ago", event: "Teleconsultation", detail: "Follow-up with Dr. Rahul Mehta — BP stabilizing", type: "consultation", color: "#f59e0b" },
-  { time: "5d ago", event: "Emergency Alert Cleared", detail: "Post-cardiac event monitoring completed", type: "emergency", color: "#ef4444" },
-  { time: "1w ago", event: "Vital Signs Logged", detail: "SpO2: 98%, HR: 72 bpm — All normal", type: "vitals", color: "#8b5cf6" },
-  { time: "2w ago", event: "Discharged from AIIMS", detail: "Cardiac rehabilitation plan initiated", type: "discharge", color: "#06b6d4" },
-];
+const labReports: LabReport[] = [];
+const recentActivity: ActivityItem[] = [];
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -164,12 +189,24 @@ function SectionTitle({ icon: Icon, title, subtitle }: { icon: any; title: strin
 
 // ─── Section 1: Patient Overview ──────────────────────────────────────────────
 
-function PatientOverview() {
-  const stats = [
-    { label: "Total Visits", value: "47", icon: ClipboardList, color: "#5373A5" },
-    { label: "Emergency Cases", value: "3", icon: AlertTriangle, color: "#ef4444" },
-    { label: "Admissions", value: "5", icon: BedDouble, color: "#f59e0b" },
-    { label: "Active Meds", value: "5", icon: Pill, color: "#22c55e" },
+function PatientOverview({
+  profile,
+  userName,
+  userEmail,
+  userPhone,
+  stats,
+}: {
+  profile: ProfileData | null;
+  userName: string;
+  userEmail: string;
+  userPhone: string;
+  stats: OverviewStats;
+}) {
+  const summaryStats = [
+    { label: "Total Visits", value: String(stats.totalVisits), icon: ClipboardList, color: "#5373A5" },
+    { label: "Emergency Cases", value: String(stats.emergencyCases), icon: AlertTriangle, color: "#ef4444" },
+    { label: "Admissions", value: String(stats.admissions), icon: BedDouble, color: "#f59e0b" },
+    { label: "Active Meds", value: String(stats.activeMeds), icon: Pill, color: "#22c55e" },
   ];
 
   return (
@@ -189,18 +226,18 @@ function PatientOverview() {
 
           <div className="flex flex-col justify-center">
             <div className="flex items-center gap-2 mb-1">
-              <h1 className="text-2xl font-bold text-gray-900">Arjun Kumar</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{userName || "Patient"}</h1>
               <span className="bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">Verified</span>
             </div>
             <div className="flex flex-wrap gap-3 text-sm text-gray-600 mb-3">
-              <span className="flex items-center gap-1"><User size={13} /> Age: <strong>52</strong></span>
-              <span className="flex items-center gap-1"><Droplets size={13} style={{ color: "#ef4444" }} /> <strong>O+</strong></span>
-              <span className="flex items-center gap-1"><Shield size={13} style={{ color: "#22c55e" }} /> HDFC ERGO</span>
+              <span className="flex items-center gap-1"><User size={13} /> Age: <strong>—</strong></span>
+              <span className="flex items-center gap-1"><Droplets size={13} style={{ color: "#ef4444" }} /> <strong>{profile?.bloodGroup || "UNKNOWN"}</strong></span>
+              <span className="flex items-center gap-1"><Shield size={13} style={{ color: "#22c55e" }} /> {profile?.insuranceDetails?.providerName || "—"}</span>
             </div>
             <div className="flex flex-wrap gap-3 text-xs text-gray-500">
-              <span className="flex items-center gap-1"><Phone size={11} /> +91 98765 43210</span>
-              <span className="flex items-center gap-1"><Mail size={11} /> arjun.kumar@email.com</span>
-              <span className="flex items-center gap-1"><MapPin size={11} /> Raipur, CG</span>
+              <span className="flex items-center gap-1"><Phone size={11} /> {userPhone || "—"}</span>
+              <span className="flex items-center gap-1"><Mail size={11} /> {userEmail || "—"}</span>
+              <span className="flex items-center gap-1"><MapPin size={11} /> —</span>
             </div>
           </div>
         </div>
@@ -212,26 +249,30 @@ function PatientOverview() {
         <div className="flex flex-wrap gap-4 lg:flex-1 items-center">
           <div className="bg-blue-50 rounded-2xl px-4 py-3 min-w-[140px]">
             <p className="text-xs text-gray-500 mb-0.5">Emergency ID</p>
-            <p className="text-sm font-bold text-gray-800">LL-EMG-2025-0472</p>
+            <p className="text-sm font-bold text-gray-800">{profile?.healthIdNumber || "—"}</p>
           </div>
           <div className="bg-green-50 rounded-2xl px-4 py-3 min-w-[140px]">
             <p className="text-xs text-gray-500 mb-0.5">Insurance</p>
-            <p className="text-sm font-bold text-green-700">Active · ₹10L Cover</p>
+            <p className="text-sm font-bold text-green-700">
+              {profile?.insuranceDetails?.coverageAmount
+                ? `Active · ₹${profile.insuranceDetails.coverageAmount} Cover`
+                : "—"}
+            </p>
           </div>
           <div className="bg-purple-50 rounded-2xl px-4 py-3 min-w-[140px]">
             <p className="text-xs text-gray-500 mb-0.5">Primary Doctor</p>
-            <p className="text-sm font-bold text-gray-800">Dr. Priya Sharma</p>
+            <p className="text-sm font-bold text-gray-800">—</p>
           </div>
           <div className="bg-amber-50 rounded-2xl px-4 py-3 min-w-[140px]">
             <p className="text-xs text-gray-500 mb-0.5">Last Visit</p>
-            <p className="text-sm font-bold text-gray-800">May 22, 2025</p>
+            <p className="text-sm font-bold text-gray-800">—</p>
           </div>
         </div>
       </div>
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
-        {stats.map((s, i) => (
+        {summaryStats.map((s, i) => (
           <motion.div key={s.label} {...fadeUp(0.1 + i * 0.05)}
             className="rounded-2xl p-4 flex items-center gap-3"
             style={{ background: `${s.color}12` }}>
@@ -251,21 +292,30 @@ function PatientOverview() {
 
 // ─── Section 2: Medical Timeline ──────────────────────────────────────────────
 
-function MedicalTimeline() {
-  const [events, setEvents] = useState(timelineEvents);
+function MedicalTimeline({ events }: { events: TimelineEvent[] }) {
+  const [items, setItems] = useState(events);
+
+  useEffect(() => {
+    setItems(events);
+  }, [events]);
 
   const toggle = (id: number) => {
-    setEvents(prev => prev.map(e => e.id === id ? { ...e, expanded: !e.expanded } : e));
+    setItems(prev => prev.map(e => e.id === id ? { ...e, expanded: !e.expanded } : e));
   };
 
   return (
     <motion.div {...fadeUp(0.1)} className={`${glassCard} p-6`}>
       <SectionTitle icon={Activity} title="Medical Timeline" subtitle="Chronological health journey" />
       <div className="relative">
+        {items.length === 0 ? (
+          <p className="text-sm text-gray-500">No medical timeline entries yet.</p>
+        ) : null}
         {/* connector line */}
-        <div className="absolute left-5 top-4 bottom-4 w-0.5 bg-gradient-to-b from-blue-200 via-blue-300 to-green-200 rounded-full" />
+        {items.length > 0 ? (
+          <div className="absolute left-5 top-4 bottom-4 w-0.5 bg-gradient-to-b from-blue-200 via-blue-300 to-green-200 rounded-full" />
+        ) : null}
         <div className="space-y-4">
-          {events.map((event, idx) => {
+          {items.map((event, idx) => {
             const cfg = typeConfig[event.type];
             const Icon = cfg.icon;
             return (
@@ -315,13 +365,13 @@ function MedicalTimeline() {
 
 // ─── Section 3: Medical Records Table ─────────────────────────────────────────
 
-function MedicalRecordsTable() {
+function MedicalRecordsTable({ records }: { records: MedicalRecord[] }) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [page, setPage] = useState(0);
   const perPage = 4;
 
-  const filtered = medicalRecords.filter(r =>
+  const filtered = records.filter(r =>
     (filter === "all" || r.status === filter) &&
     (r.diagnosis.toLowerCase().includes(search.toLowerCase()) || r.doctor.toLowerCase().includes(search.toLowerCase()))
   );
@@ -349,7 +399,10 @@ function MedicalRecordsTable() {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        {visible.length === 0 ? (
+          <p className="text-sm text-gray-500">No medical records available.</p>
+        ) : (
+          <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100">
               {["Date", "Diagnosis", "Doctor", "Hospital", "Status"].map(h => (
@@ -370,7 +423,8 @@ function MedicalRecordsTable() {
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        )}
       </div>
 
       {pages > 1 && (
@@ -394,36 +448,40 @@ function MedicalRecordsTable() {
 
 // ─── Section 4: Prescription History ──────────────────────────────────────────
 
-function PrescriptionHistory() {
+function PrescriptionHistory({ items }: { items: Prescription[] }) {
   return (
     <motion.div {...fadeUp(0.2)} className={`${glassCard} p-6`}>
       <SectionTitle icon={Pill} title="Prescription History" subtitle="Medication tracking & management" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-        {prescriptions.map((rx, i) => (
-          <motion.div key={rx.id} initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: i * 0.05 }}
-            className={`rounded-2xl p-4 border ${rx.status === "active" ? "bg-blue-50/60 border-blue-200" : "bg-gray-50 border-gray-200"}`}>
-            <div className="flex items-start justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white shadow-sm">
-                  <Pill size={14} style={{ color: rx.status === "active" ? "#5373A5" : "#9ca3af" }} />
+      {items.length === 0 ? (
+        <p className="text-sm text-gray-500">No prescriptions available.</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          {items.map((rx, i) => (
+            <motion.div key={rx.id} initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: i * 0.05 }}
+              className={`rounded-2xl p-4 border ${rx.status === "active" ? "bg-blue-50/60 border-blue-200" : "bg-gray-50 border-gray-200"}`}>
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white shadow-sm">
+                    <Pill size={14} style={{ color: rx.status === "active" ? "#5373A5" : "#9ca3af" }} />
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-800 text-sm">{rx.medication}</p>
+                    <p className="text-xs text-gray-400">{rx.category}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-bold text-gray-800 text-sm">{rx.medication}</p>
-                  <p className="text-xs text-gray-400">{rx.category}</p>
-                </div>
+                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${statusColors[rx.status]}`}>{rx.status}</span>
               </div>
-              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${statusColors[rx.status]}`}>{rx.status}</span>
-            </div>
-            <div className="space-y-1 text-xs text-gray-600 mt-3">
-              <div className="flex justify-between"><span className="text-gray-400">Dosage</span><span className="font-medium">{rx.dosage}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Frequency</span><span className="font-medium">{rx.frequency}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Duration</span><span className="font-medium">{rx.duration}</span></div>
-              <div className="flex justify-between"><span className="text-gray-400">Prescribed by</span><span className="font-medium">{rx.doctor}</span></div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+              <div className="space-y-1 text-xs text-gray-600 mt-3">
+                <div className="flex justify-between"><span className="text-gray-400">Dosage</span><span className="font-medium">{rx.dosage}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Frequency</span><span className="font-medium">{rx.frequency}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Duration</span><span className="font-medium">{rx.duration}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Prescribed by</span><span className="font-medium">{rx.doctor}</span></div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
     </motion.div>
   );
 }
@@ -524,68 +582,79 @@ function VitalTrends() {
 
 // ─── Section 6: Emergency History ────────────────────────────────────────────
 
-function EmergencyHistory() {
+function EmergencyHistory({ items }: { items: { id: number; type: string; date: string; location: string; response: string; hospital: string; outcome: string }[] }) {
   return (
     <motion.div {...fadeUp(0.3)} className={`${glassCard} p-6`}>
       <SectionTitle icon={AlertTriangle} title="Emergency History" subtitle="Critical incident records" />
-      <div className="space-y-3">
-        {emergencyHistory.map((em, i) => (
-          <motion.div key={em.id} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.08 }}
-            className="bg-red-50/40 border border-red-100 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
-            <div className="w-10 h-10 bg-red-100 rounded-2xl flex items-center justify-center shrink-0">
-              <Flame size={16} className="text-red-500" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-bold text-gray-800 text-sm">{em.type}</p>
-              <div className="flex flex-wrap gap-3 mt-1 text-xs text-gray-500">
-                <span className="flex items-center gap-1"><Calendar size={10} />{em.date}</span>
-                <span className="flex items-center gap-1"><MapPin size={10} />{em.location}</span>
-                <span className="flex items-center gap-1"><Clock size={10} />Response: {em.response}</span>
-                <span className="flex items-center gap-1"><BedDouble size={10} />{em.hospital}</span>
+      {items.length === 0 ? (
+        <p className="text-sm text-gray-500">No emergency records yet.</p>
+      ) : (
+        <div className="space-y-3">
+          {items.map((em, i) => (
+            <motion.div key={em.id} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.08 }}
+              className="bg-red-50/40 border border-red-100 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+              <div className="w-10 h-10 bg-red-100 rounded-2xl flex items-center justify-center shrink-0">
+                <Flame size={16} className="text-red-500" />
               </div>
-            </div>
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 shrink-0">{em.outcome}</span>
-          </motion.div>
-        ))}
-      </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-gray-800 text-sm">{em.type}</p>
+                <div className="flex flex-wrap gap-3 mt-1 text-xs text-gray-500">
+                  <span className="flex items-center gap-1"><Calendar size={10} />{em.date}</span>
+                  <span className="flex items-center gap-1"><MapPin size={10} />{em.location}</span>
+                  <span className="flex items-center gap-1"><Clock size={10} />Response: {em.response}</span>
+                  <span className="flex items-center gap-1"><BedDouble size={10} />{em.hospital}</span>
+                </div>
+              </div>
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 shrink-0">{em.outcome}</span>
+            </motion.div>
+          ))}
+        </div>
+      )}
     </motion.div>
   );
 }
 
 // ─── Section 7: Lab Reports ───────────────────────────────────────────────────
 
-function LabReports() {
+function LabReports({ items }: { items: LabReport[] }) {
   return (
     <motion.div {...fadeUp(0.35)} className={`${glassCard} p-6`}>
       <SectionTitle icon={FlaskConical} title="Lab Reports" subtitle="Diagnostic test archive" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-        {labReports.map((lab, i) => (
-          <motion.div key={lab.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.06 }}
-            className="bg-white border border-gray-100 rounded-2xl p-4 flex items-start gap-3 hover:shadow-md transition-shadow">
-            <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "#5373A512" }}>
-              <lab.icon size={16} style={{ color: "#5373A5" }} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-gray-800 text-sm leading-tight">{lab.name}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{lab.type} · {lab.date}</p>
-              <span className={`mt-2 inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${statusColors[lab.status]}`}>{lab.status}</span>
-            </div>
-            <button className="shrink-0 w-8 h-8 rounded-xl bg-gray-50 hover:bg-blue-50 flex items-center justify-center transition-colors group">
-              <Download size={13} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
-            </button>
-          </motion.div>
-        ))}
-      </div>
+      {items.length === 0 ? (
+        <p className="text-sm text-gray-500">No lab reports available yet.</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          {items.map((lab, i) => (
+            <motion.div key={lab.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.06 }}
+              className="bg-white border border-gray-100 rounded-2xl p-4 flex items-start gap-3 hover:shadow-md transition-shadow">
+              <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "#5373A512" }}>
+                <lab.icon size={16} style={{ color: "#5373A5" }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-gray-800 text-sm leading-tight">{lab.name}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{lab.type} · {lab.date}</p>
+                <span className={`mt-2 inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${statusColors[lab.status]}`}>{lab.status}</span>
+              </div>
+              <button className="shrink-0 w-8 h-8 rounded-xl bg-gray-50 hover:bg-blue-50 flex items-center justify-center transition-colors group">
+                <Download size={13} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
+              </button>
+            </motion.div>
+          ))}
+        </div>
+      )}
     </motion.div>
   );
 }
 
 // ─── Section 8: Current Health Status ────────────────────────────────────────
 
-function CurrentHealthStatus() {
+function CurrentHealthStatus({ profile }: { profile: ProfileData | null }) {
   const riskScore = 68;
+  const allergies = profile?.allergies?.length ? profile.allergies : [];
+  const chronic = profile?.chronicDiseases?.length ? profile.chronicDiseases : [];
+  const activeMeds = profile?.medications?.length ?? 0;
 
   return (
     <motion.div {...fadeUp(0.4)} className={`${glassCard} p-6`}>
@@ -593,27 +662,35 @@ function CurrentHealthStatus() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="bg-red-50 border border-red-100 rounded-2xl p-4">
           <p className="text-xs font-semibold text-red-400 uppercase tracking-wide mb-2">Blood Group</p>
-          <div className="flex items-center gap-2"><Droplets size={20} className="text-red-500" /><span className="text-2xl font-black text-red-600">O+</span></div>
+          <div className="flex items-center gap-2"><Droplets size={20} className="text-red-500" /><span className="text-2xl font-black text-red-600">{profile?.bloodGroup || "UNKNOWN"}</span></div>
         </div>
         <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4">
           <p className="text-xs font-semibold text-orange-400 uppercase tracking-wide mb-2">Allergies</p>
-          <div className="flex flex-wrap gap-1.5 mt-1">
-            {["Penicillin", "Sulfa Drugs", "Ibuprofen"].map(a => (
-              <span key={a} className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">{a}</span>
-            ))}
-          </div>
+          {allergies.length ? (
+            <div className="flex flex-wrap gap-1.5 mt-1">
+              {allergies.map(a => (
+                <span key={a} className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">{a}</span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-gray-400">No allergies recorded</p>
+          )}
         </div>
         <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4">
           <p className="text-xs font-semibold text-blue-400 uppercase tracking-wide mb-2">Chronic Conditions</p>
-          <div className="flex flex-wrap gap-1.5 mt-1">
-            {["CAD", "Hypertension", "T2DM"].map(c => (
-              <span key={c} className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">{c}</span>
-            ))}
-          </div>
+          {chronic.length ? (
+            <div className="flex flex-wrap gap-1.5 mt-1">
+              {chronic.map(c => (
+                <span key={c} className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">{c}</span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-gray-400">No chronic conditions listed</p>
+          )}
         </div>
         <div className="bg-green-50 border border-green-100 rounded-2xl p-4">
           <p className="text-xs font-semibold text-green-400 uppercase tracking-wide mb-2">Active Medications</p>
-          <p className="text-3xl font-black text-green-600">5</p>
+          <p className="text-3xl font-black text-green-600">{activeMeds}</p>
           <p className="text-xs text-gray-400 mt-0.5">drugs currently</p>
         </div>
         <div className="bg-purple-50 border border-purple-100 rounded-2xl p-4 col-span-1 sm:col-span-2 lg:col-span-1">
@@ -723,26 +800,30 @@ function AIHealthInsights() {
 
 // ─── Section 10: Recent Activity Feed ─────────────────────────────────────────
 
-function RecentActivityFeed() {
+function RecentActivityFeed({ items }: { items: ActivityItem[] }) {
   return (
     <motion.div {...fadeUp(0.45)} className={`${glassCard} p-6`}>
       <SectionTitle icon={Clock} title="Recent Activity" subtitle="Latest updates & interactions" />
-      <div className="space-y-3">
-        {recentActivity.map((a, i) => (
-          <motion.div key={i} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.07 }}
-            className="flex items-start gap-3 p-3 rounded-2xl hover:bg-gray-50/80 transition-colors">
-            <div className="w-2.5 h-2.5 rounded-full mt-1.5 shrink-0" style={{ background: a.color }} />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-2">
-                <p className="font-semibold text-gray-800 text-sm">{a.event}</p>
-                <span className="text-xs text-gray-400 shrink-0">{a.time}</span>
+      {items.length === 0 ? (
+        <p className="text-sm text-gray-500">No recent activity yet.</p>
+      ) : (
+        <div className="space-y-3">
+          {items.map((a, i) => (
+            <motion.div key={i} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.07 }}
+              className="flex items-start gap-3 p-3 rounded-2xl hover:bg-gray-50/80 transition-colors">
+              <div className="w-2.5 h-2.5 rounded-full mt-1.5 shrink-0" style={{ background: a.color }} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-semibold text-gray-800 text-sm">{a.event}</p>
+                  <span className="text-xs text-gray-400 shrink-0">{a.time}</span>
+                </div>
+                <p className="text-xs text-gray-500 mt-0.5">{a.detail}</p>
               </div>
-              <p className="text-xs text-gray-500 mt-0.5">{a.detail}</p>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
     </motion.div>
   );
 }
@@ -750,6 +831,147 @@ function RecentActivityFeed() {
 // ─── Main Export ──────────────────────────────────────────────────────────────
 
 export default function PatientHistory() {
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [records, setRecords] = useState<HistoryRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      try {
+        const [profileRes, historyRes] = await Promise.all([
+          getProfile().catch(() => null),
+          getMedicalHistory(1, 50).catch(() => null),
+        ]);
+
+        if (!active) return;
+
+        setProfile(profileRes);
+
+        const historyData = historyRes && Array.isArray((historyRes as any).data)
+          ? (historyRes as any).data
+          : Array.isArray(historyRes)
+          ? historyRes
+          : (historyRes as any)?.data?.data ?? [];
+
+        setRecords(historyData as HistoryRecord[]);
+      } catch (err) {
+        if (active) setError("Unable to load patient history.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const timelineEvents = useMemo((): TimelineEvent[] => {
+    return records.map((record, index) => {
+      const date = formatDate(record.createdAt || record.scheduledAt || record.prescribedAt);
+      const type = record.recordType === "EMERGENCY"
+        ? "emergency"
+        : record.recordType === "APPOINTMENT"
+        ? "admission"
+        : "treatment";
+      const title = record.recordType === "EMERGENCY"
+        ? `Emergency: ${record.emergencyType || "Event"}`
+        : record.recordType === "APPOINTMENT"
+        ? `Appointment: ${record.specialization || record.reason || "Consultation"}`
+        : `Prescription: ${record.medicationName || "Medication"}`;
+      const description = record.description || record.reason || `${record.medicationName || "Medication"} ${record.dosage || ""} ${record.frequency || ""}`.trim() || "Record updated";
+
+      return {
+        id: index + 1,
+        date,
+        type,
+        title,
+        description,
+        doctor: record.prescribedBy || record.specialization || "Assigned clinician",
+        hospital: record.location?.city || "LifeLine Network",
+        expanded: false,
+      };
+    });
+  }, [records]);
+
+  const medicalRecords = useMemo((): MedicalRecord[] => {
+    return records
+      .filter((r) => r.recordType !== "PRESCRIPTION")
+      .map((record, index) => ({
+        id: index + 1,
+        date: formatDate(record.createdAt || record.scheduledAt),
+        diagnosis: record.recordType === "EMERGENCY"
+          ? record.emergencyType || "Emergency Event"
+          : record.reason || record.specialization || "Appointment",
+        doctor: record.specialization || "Assigned clinician",
+        hospital: record.location?.city || "LifeLine Network",
+        status: normalizeStatus(record.status),
+      }));
+  }, [records]);
+
+  const prescriptions = useMemo((): Prescription[] => {
+    const fromHistory = records
+      .filter((r) => r.recordType === "PRESCRIPTION")
+      .map((record, index) => ({
+        id: index + 1,
+        medication: record.medicationName || "Medication",
+        dosage: record.dosage || "—",
+        frequency: record.frequency || "—",
+        duration: record.duration || "Ongoing",
+        doctor: record.prescribedBy || "Assigned clinician",
+        status: "active" as const,
+        category: "Prescription",
+        startDate: formatDate(record.prescribedAt),
+      }));
+
+    if (fromHistory.length) return fromHistory;
+
+    return (profile?.prescriptions || []).map((record, index) => ({
+      id: index + 1,
+      medication: record.medicationName,
+      dosage: record.dosage,
+      frequency: record.frequency,
+      duration: record.duration || "Ongoing",
+      doctor: record.prescribedBy,
+      status: "active" as const,
+      category: "Prescription",
+      startDate: formatDate(record.prescribedAt),
+    }));
+  }, [records, profile]);
+
+  const emergencyItems = useMemo(() => {
+    return records
+      .filter((r) => r.recordType === "EMERGENCY")
+      .map((record, index) => ({
+        id: index + 1,
+        type: record.emergencyType || "Emergency",
+        date: formatDate(record.createdAt),
+        location: record.location?.address || record.location?.city || "—",
+        response: record.estimatedArrivalTime ? `${record.estimatedArrivalTime} min` : "—",
+        hospital: record.location?.city || "LifeLine Network",
+        outcome: record.status ? record.status.replace(/_/g, " ") : "Active",
+      }));
+  }, [records]);
+
+  const stats = useMemo<OverviewStats>(() => {
+    const emergencyCases = records.filter((r) => r.recordType === "EMERGENCY").length;
+    const admissions = records.filter((r) => r.recordType === "APPOINTMENT").length;
+    return {
+      totalVisits: records.length,
+      emergencyCases,
+      admissions,
+      activeMeds: profile?.prescriptions?.length ?? 0,
+    };
+  }, [records, profile]);
+
+  const userName = user?.name || "";
+  const userEmail = user?.email || "";
+  const userPhone = user?.phone || "";
+
   return (
     <div
       className="w-full p-6"
@@ -758,6 +980,14 @@ export default function PatientHistory() {
           "linear-gradient(145deg, #f0f4ff 0%, #e8f0fd 50%, #f5f7ff 100%)",
       }}
     >
+      {loading ? (
+        <div className="mb-4 text-sm text-gray-500">Loading patient history…</div>
+      ) : null}
+      {error ? (
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+          {error}
+        </div>
+      ) : null}
 
       {/* Page Header */}
       {/* <motion.div {...fadeUp(0)} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -777,26 +1007,32 @@ export default function PatientHistory() {
       </motion.div> */}
 
       {/* Sections */}
-      <PatientOverview />
+      <PatientOverview
+        profile={profile}
+        userName={userName}
+        userEmail={userEmail}
+        userPhone={userPhone}
+        stats={stats}
+      />
 
       {/* Two column */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <MedicalTimeline />
+        <MedicalTimeline events={timelineEvents} />
         <VitalTrends />
       </div>
 
-      <div className="mb-6"><MedicalRecordsTable /></div>
-      <div className="mb-6"><PrescriptionHistory /></div>
+      <div className="mb-6"><MedicalRecordsTable records={medicalRecords} /></div>
+      <div className="mb-6"><PrescriptionHistory items={prescriptions} /></div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <EmergencyHistory />
-        <CurrentHealthStatus />
+        <EmergencyHistory items={emergencyItems} />
+        <CurrentHealthStatus profile={profile} />
       </div>
 
-      <div className="mb-6"><LabReports /></div>
+      <div className="mb-6"><LabReports items={labReports} /></div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div className="lg:col-span-2"><RecentActivityFeed /></div>
+        <div className="lg:col-span-2"><RecentActivityFeed items={recentActivity} /></div>
         <div />
       </div>
 

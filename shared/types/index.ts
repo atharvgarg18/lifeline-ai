@@ -729,9 +729,14 @@ export interface PatientAnalytics {
 
 export interface QRCodeResponse {
   qrCodeBase64: string; // data:image/png;base64,...
+  qrCodeDataUrl?: string; // alias for frontend convenience
   expiresAt: string;
   healthIdNumber: string;
   generatedAt: string;
+  name?: string;
+  bloodGroup?: string;
+  allergies?: string[];
+  emergencyContacts?: EmergencyContact[];
 }
 
 export interface QRCodePayload {

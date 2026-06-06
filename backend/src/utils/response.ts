@@ -69,3 +69,14 @@ export const sendPaginated = <T>(
 export const sendCreated = <T>(res: Response, data: T, message?: string): void => {
   sendSuccess(res, { data, message, statusCode: 201 });
 };
+
+/**
+ * Create a success response object (for use with res.json())
+ */
+export const successResponse = <T>(data: T, message?: string) => {
+  return {
+    success: true,
+    ...(message && { message }),
+    data,
+  };
+};

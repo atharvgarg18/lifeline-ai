@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import {
   Menu, X, Search, Bell, Globe, ChevronDown,
   LayoutDashboard, AlertCircle, MapPin, Building2, Truck,
@@ -224,12 +226,17 @@ function EmergencyCallBtn() {
 /* ─────────────────────────────────────────────────────────────────────────────
    SIDEBAR CONTENT
 ───────────────────────────────────────────────────────────────────────────── */
-function SidebarContent({ active }: { active: string }) {
+function SidebarContent({ pathname }: { pathname: string }) {
+  const isActive = (href?: string) => {
+    if (!href) return false;
+    if (pathname === href) return true;
+    return pathname.startsWith(`${href}/`);
+  };
   return (
     <div className="flex flex-col flex-1 overflow-y-auto">
       <nav className="flex-1 pt-2 pb-1 space-y-0.5">
         {NAV_ITEMS.map(item => (
-          <SidebarItem key={item.label} item={item} active={item.label === active} />
+          <SidebarItem key={item.label} item={item} active={isActive(item.href)} />
         ))}
       </nav>
       <SystemStatus />
@@ -248,7 +255,7 @@ function Sidebar({
   mobileOpen: boolean;
   onClose: () => void;
 }) {
-  const active = "Dashboard";
+  const pathname = usePathname();
 
   return (
     <>
@@ -263,7 +270,7 @@ function Sidebar({
         }}
       >
         <Logo />
-        <SidebarContent active={active} />
+        <SidebarContent pathname={pathname} />
       </aside>
 
       {/* Mobile Overlay */}
@@ -315,7 +322,7 @@ function Sidebar({
               </button>
             </div>
 
-            <SidebarContent active={active} />
+            <SidebarContent pathname={pathname} />
           </motion.aside>
         )}
       </AnimatePresence>
@@ -510,6 +517,12 @@ function UserProfileBlock() {
       {open && (
         <div className="absolute right-0 top-14 w-44 rounded-2xl overflow-hidden z-50"
              style={{ background: "#0a1428", border: "1px solid rgba(255,255,255,.1)", boxShadow: "0 16px 40px rgba(0,0,0,.7)" }}>
+          <Link
+            href="/patient/profile"
+            className="w-full flex items-center gap-2 px-4 py-3 text-sm text-slate-100 hover:bg-white/5 transition-colors"
+          >
+            <User size={14} /> Profile
+          </Link>
           <button onClick={logout}
             className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-colors">
             <LogOut size={14} /> Sign Out

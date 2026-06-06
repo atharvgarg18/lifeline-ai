@@ -17,6 +17,12 @@ export const ENV = {
 
   // Database
   MONGODB_URI: optional('MONGODB_URI', 'mongodb://admin:password123@localhost:27017/lifeline-dev'),
+  MONGODB_HOST: optional('MONGODB_HOST', ''),
+  MONGODB_DB: optional('MONGODB_DB', ''),
+  MONGODB_USER: optional('MONGODB_USER', ''),
+  MONGODB_PASSWORD: optional('MONGODB_PASSWORD', ''),
+  MONGODB_AUTH_SOURCE: optional('MONGODB_AUTH_SOURCE', 'admin'),
+  MONGODB_APP_NAME: optional('MONGODB_APP_NAME', 'Cluster0'),
   REDIS_URL: optional('REDIS_URL', 'redis://:redis123@localhost:6379'),
 
   // JWT

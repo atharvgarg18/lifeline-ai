@@ -19,9 +19,10 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 
 // Module Routes
 import { emergencySosRoutes } from './modules/emergency-sos/emergencySosRoutes';
-import { patientProfileRoutes } from './modules/patient-profile/patientProfileRoutes';
+import patientProfileRoutes from './modules/patient-profile/patientProfileRoutes';
 import { appointmentRoutes } from './modules/appointments/appointmentRoutes';
 import { authRoutes } from './modules/auth/authRoutes';
+import hmsRoutes from './modules/hms/routes/hmsRoutes';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // App Setup
@@ -35,8 +36,20 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
 
+const allowedOrigins = new Set([
+  ENV.FRONTEND_URL,
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:3002', // HMS App
+]);
+
 app.use(cors({
-  origin: [ENV.FRONTEND_URL, 'http://localhost:3000', 'http://localhost:3001'],
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.has(origin)) return callback(null, true);
+    if (origin.endsWith('.vercel.app')) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -101,20 +114,26 @@ app.use(`${API_BASE}/emergency/sos/trigger`, criticalLimiter);
 
 app.use(`${API_BASE}/emergency`, emergencySosRoutes);
 app.use(`${API_BASE}/patient`, patientProfileRoutes);
+app.use(`${API_BASE}/patient-profile`, patientProfileRoutes);
 app.use(`${API_BASE}/appointments`, appointmentRoutes);
+app.use(`${API_BASE}/hms`, hmsRoutes);
 
 // ── Dashboard Stats (public for dev) ──────────────────────────────
 import mongoose from 'mongoose';
 app.get(`${API_BASE}/dashboard/stats`, async (_req, res) => {
   try {
     const db = mongoose.connection.db;
-    if (!db) return res.json({ success: true, data: { emergencies: 0, patients: 0, ambulances: 0, hospitals: 98, livesSaved: 12540 } });
+    if (!db) {
+      return res.json({ success: true, data: { emergencies: 0, patients: 0, ambulances: 0, hospitals: 98, livesSaved: 12540 } });
+    }
     const [emergencies, patients] = await Promise.all([
       db.collection('emergencysoses').countDocuments(),
       db.collection('users').countDocuments({ role: 'PATIENT' }),
     ]);
-    res.json({ success: true, data: { emergencies, patients, ambulances: 32, hospitals: 98, livesSaved: 12540 + patients } });
-  } catch { res.json({ success: true, data: { emergencies: 0, patients: 0, ambulances: 32, hospitals: 98, livesSaved: 12540 } }); }
+    return res.json({ success: true, data: { emergencies, patients, ambulances: 32, hospitals: 98, livesSaved: 12540 + patients } });
+  } catch {
+    return res.json({ success: true, data: { emergencies: 0, patients: 0, ambulances: 32, hospitals: 98, livesSaved: 12540 } });
+  }
 });
 
 app.get(`${API_BASE}/dashboard/alerts`, async (_req, res) => {
@@ -122,8 +141,10 @@ app.get(`${API_BASE}/dashboard/alerts`, async (_req, res) => {
     const db = mongoose.connection.db;
     if (!db) return res.json({ success: true, data: [] });
     const alerts = await db.collection('emergencysoses').find({}).sort({ createdAt: -1 }).limit(5).toArray();
-    res.json({ success: true, data: alerts });
-  } catch { res.json({ success: true, data: [] }); }
+    return res.json({ success: true, data: alerts });
+  } catch {
+    return res.json({ success: true, data: [] });
+  }
 });
 
 // TODO: Add as modules are built:

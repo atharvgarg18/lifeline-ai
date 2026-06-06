@@ -1,4 +1,5 @@
 import EmergencySOSDashboard from "@/components/emergency/EmergencyDashboard";
+import SOSQuickRequest from "@/components/emergency/SOSQuickRequest";
 import LifelineMedicalSections from "@/components/emergency/MedicalStatusSection";
 import LifelineDashboardSections from "@/components/emergency/EmergencyResponseSections";
 import { HealthAnalytics } from "@/components/emergency/HealthAnalytics";
@@ -10,10 +11,7 @@ import { HealthAnalytics } from "@/components/emergency/HealthAnalytics";
 export default function Page() {
   return (
     <>
-    {/* <EmergencySOSSection1 />
-    <EmergencySOSSection2 />
-    <EmergencySOSSection3 />
-    <EmergencySOSSection4 /> */}
+      <SOSQuickRequest />
       <EmergencySOSDashboard />
       <LifelineDashboardSections />
       <LifelineMedicalSections />
