@@ -7,7 +7,7 @@ import {
   Phone,
   AlertTriangle,
   Calendar,
-  // UserRound,
+  UserRound,
   Pencil,
   Copy,
   CheckCheck,
@@ -255,7 +255,7 @@ export default function PatientProfileHeader() {
           {/* primary doctor */}
           <div className="flex items-center gap-2 rounded-2xl border border-white/[0.07] bg-white/[0.04] px-3 py-2 backdrop-blur-sm">
             <div className="flex h-7 w-7 items-center justify-center rounded-full border border-violet-500/30 bg-violet-500/10">
-              {/* <UserRound size={13} className="text-violet-400" /> */}
+              <UserRound size={13} className="text-violet-400" />
             </div>
             <div>
               <p className="text-[9px] font-semibold uppercase tracking-widest text-white/35">
