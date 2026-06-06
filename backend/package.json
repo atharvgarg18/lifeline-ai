@@ -16,6 +16,7 @@
     "format:check": "prettier --check 'src/**/*.ts'",
     "db:migrate": "ts-node src/migrations/run.ts",
     "db:seed": "ts-node src/database/seeds/index.ts",
+    "db:seed:hospitals": "ts-node -r tsconfig-paths/register src/scripts/seedHospitals.ts",
     "db:reset": "ts-node src/database/reset.ts",
     "pre-commit": "lint-staged"
   },

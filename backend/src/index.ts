@@ -19,9 +19,10 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 
 // Module Routes
 import { emergencySosRoutes } from './modules/emergency-sos/emergencySosRoutes';
-import { patientProfileRoutes } from './modules/patient-profile/patientProfileRoutes';
+import patientProfileRoutes from './modules/patient-profile/patientProfileRoutes';
 import { appointmentRoutes } from './modules/appointments/appointmentRoutes';
 import { authRoutes } from './modules/auth/authRoutes';
+import hmsRoutes from './modules/hms/routes/hmsRoutes';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // App Setup
@@ -39,6 +40,7 @@ const allowedOrigins = new Set([
   ENV.FRONTEND_URL,
   'http://localhost:3000',
   'http://localhost:3001',
+  'http://localhost:3002', // HMS App
 ]);
 
 app.use(cors({
@@ -112,7 +114,9 @@ app.use(`${API_BASE}/emergency/sos/trigger`, criticalLimiter);
 
 app.use(`${API_BASE}/emergency`, emergencySosRoutes);
 app.use(`${API_BASE}/patient`, patientProfileRoutes);
+app.use(`${API_BASE}/patient-profile`, patientProfileRoutes);
 app.use(`${API_BASE}/appointments`, appointmentRoutes);
+app.use(`${API_BASE}/hms`, hmsRoutes);
 
 // ── Dashboard Stats (public for dev) ──────────────────────────────
 import mongoose from 'mongoose';
