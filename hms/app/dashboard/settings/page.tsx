@@ -1,6 +1,6 @@
 'use client'
 
-import { Hospital, Bell, Shield } from 'lucide-react'
+import { Building2, Bell, Shield } from 'lucide-react'
 
 export default function SettingsPage() {
   return (
@@ -8,7 +8,7 @@ export default function SettingsPage() {
       {/* Hospital Settings */}
       <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
         <div className="flex items-center space-x-3 mb-6">
-          <Hospital className="w-6 h-6 text-primary-600" />
+          <Building2 className="w-6 h-6 text-primary-600" />
           <h3 className="text-lg font-semibold text-gray-900">
             Hospital Information
           </h3>

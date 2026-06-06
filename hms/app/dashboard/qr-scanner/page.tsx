@@ -42,10 +42,10 @@ export default function QRScannerPage() {
 
         toast.dismiss(loadingToast)
 
-        if (response.success && response.data.qrValid) {
+        if (response.data?.success && response.data?.data?.qrValid) {
           setPatientData({
-            ...response.data.patient,
-            qrCodeId: response.data.qrCodeId,
+            ...response.data.data.patient,
+            qrCodeId: response.data.data.qrCodeId,
           })
           setShouldShowScanner(false)
           toast.success('✓ Patient verified successfully', {
