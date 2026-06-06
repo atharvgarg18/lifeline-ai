@@ -81,6 +81,9 @@ io.on('connection', (socket) => {
 
 console.log('✅ Socket.io initialized');
 
+// ── Trust Proxy (for Render/production behind load balancer) ─────
+app.set('trust proxy', 1);
+
 // ── Security ──────────────────────────────────────────────────────
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
