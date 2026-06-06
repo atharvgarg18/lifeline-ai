@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar,
   PieChart, Pie, Cell, RadialBarChart, RadialBar,
@@ -72,6 +73,8 @@ const sparkBP        = [120, 118, 122, 119, 121, 120, 118, 120];
 const sparkSleep     = [6.2, 7.1, 6.8, 7.3, 6.5, 6.8, 7.0, 6.8];
 const sparkActivity  = [2.8, 3.5, 3.2, 4.1, 2.9, 3.6, 3.2, 3.2];
 const sparkWeight    = [72.1, 71.8, 71.3, 71.0, 70.8, 70.6, 70.5];
+
+
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
@@ -506,130 +509,127 @@ function StressCard() {
   );
 }
 
+
 // ─── Main Export ─────────────────────────────────────────────────────────────
 
 export default function HealthAnalyticsContent() {
+  const [dashboardData, setDashboardData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:3000/api/v1/health/dashboard"
+        );
+
+        const result = await response.json();
+
+        console.log("Dashboard Data:", result);
+
+        setDashboardData(result.data);
+        console.log("STEPS VALUE:",
+  result.data?.steps?.bucket?.[0]?.dataset?.[0]?.point?.[0]?.value?.[0]?.intVal
+);
+        
+      } catch (error) {
+        console.error("Failed to fetch dashboard data", error);
+      }
+    };
+
+    fetchData();
+
+    const interval = setInterval(fetchData, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!dashboardData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading health data...
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen p-4 md:p-6 lg:p-8 space-y-6" style={{ background: "#f4f7fb", fontFamily: "'DM Sans', 'Inter', system-ui, sans-serif" }}>
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+  <MetricCard
+  icon={<Footprints size={16} />}
+  label="Steps"
+  value={String(
+    dashboardData?.steps?.bucket?.[0]?.dataset?.[0]?.point?.[0]?.value?.[0]?.intVal || 0
+  )}
+  unit="steps"
+  trend="Live"
+  trendUp
+  color="#3b82f6"
+  sparkData={sparkActivity}
+  glowColor="#3b82f6"
+/>
 
-      {/* SECTION 1 — HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-gray-800 tracking-tight">Health Analytics</h1>
-          <p className="text-sm text-gray-400 mt-0.5">Track, analyze and improve your health with intelligent insights</p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <button className="flex items-center gap-2 px-4 py-2 bg-white rounded-2xl border border-gray-200 text-sm font-semibold text-gray-600 shadow-sm hover:shadow-md transition-shadow">
-            <Calendar size={15} className="text-blue-500" />
-            28 May – 28 Jun 2025
-            <ChevronDown size={14} />
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-white rounded-2xl border border-gray-200 text-sm font-semibold text-gray-600 shadow-sm hover:shadow-md transition-shadow">
-            <Filter size={14} className="text-blue-500" /> Filters
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 rounded-2xl text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors">
-            <Download size={14} /> Export Report
-          </button>
-        </div>
-      </div>
+<MetricCard
+  icon={<Flame size={16}/>}
+  label="Calories"
+  value={String(
+    Math.round(
+      dashboardData?.calories?.bucket?.[0]?.dataset?.[0]?.point?.[0]?.value?.[0]?.fpVal || 0
+    )
+  )}
+  unit="kcal"
+  trend="Live"
+  trendUp
+  color="#f97316"
+  sparkData={sparkActivity}
+  glowColor="#f97316"
+/>
 
-      {/* SECTION 2 — METRIC CARDS */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <MetricCard icon={<Heart size={16}/>} label="Heart Rate" value="72" unit="bpm" trend="4%" trendUp color="#ef4444" sparkData={sparkHeartRate} glowColor="#ef4444"/>
-        <MetricCard icon={<Activity size={16}/>} label="Blood Pressure" value="120/80" unit="mmHg" trend="2%" trendUp={false} color="#f59e0b" sparkData={sparkBP} glowColor="#f59e0b"/>
-        <MetricCard icon={<Moon size={16}/>} label="Sleep" value="6.8" unit="hrs" trend="6%" trendUp color="#8b5cf6" sparkData={sparkSleep} glowColor="#8b5cf6"/>
-        <MetricCard icon={<Zap size={16}/>} label="Activity" value="3.2" unit="hrs" trend="10%" trendUp color="#10b981" sparkData={sparkActivity} glowColor="#10b981"/>
-        <MetricCard icon={<Scale size={16}/>} label="Weight" value="70.5" unit="kg" trend="0.8 kg" trendUp={false} color="#3b82f6" sparkData={sparkWeight} glowColor="#3b82f6"/>
-      </div>
+<MetricCard
+  icon={<Activity size={16} />}
+  label="Distance"
+  value={String(
+    (
+      (dashboardData?.distance?.bucket?.[0]?.dataset?.[0]?.point?.[0]?.value?.[0]?.fpVal || 0) /
+      1000
+    ).toFixed(2)
+  )}
+  unit="km"
+  trend="Live"
+  trendUp
+  color="#10b981"
+  sparkData={sparkActivity}
+  glowColor="#10b981"
+/>
 
-      {/* SECTION 3 — LARGE ANALYTICS GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,1.4fr)] gap-4">
-        <HealthScoreCard />
-        <HeartRateCard />
-        <BloodPressureCard />
-      </div>
+<MetricCard
+  icon={<Footprints size={16}/>}
+  label="Steps"
+  value={String(
+    dashboardData?.steps?.bucket?.[0]?.dataset?.[0]?.point?.[0]?.value?.[0]?.intVal || 0
+  )}
+  unit="steps"
+  trend="Live"
+  trendUp
+  color="#3b82f6"
+  sparkData={sparkActivity}
+  glowColor="#3b82f6"
+/>
 
-      {/* SECTION 4 — SECONDARY ANALYTICS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <ActivityCard />
-        <SleepCard />
-        <WeightCard />
-      </div>
-
-      {/* SECTION 5 — INSIGHTS */}
-      <div>
-        <div className="flex items-center gap-2 mb-4">
-          <Zap size={15} className="text-blue-500" />
-          <h2 className="text-base font-bold text-gray-700">Insights & Recommendations</h2>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <InsightCard
-            icon={<TrendingUp size={18} className="text-emerald-600"/>}
-            title="Great Progress!"
-            description="Your activity level has increased by 10% this month. Keep it up!"
-            gradient="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100"
-            iconBg="bg-emerald-100"
-          />
-          <InsightCard
-            icon={<Moon size={18} className="text-indigo-600"/>}
-            title="Sleep Recommendation"
-            description="Try to improve your deep sleep. Aim for 7–8 hours of sleep."
-            gradient="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100"
-            iconBg="bg-indigo-100"
-          />
-          <InsightCard
-            icon={<Heart size={18} className="text-red-500"/>}
-            title="Heart Health"
-            description="Your heart rate is in the normal range. Maintain a healthy lifestyle."
-            gradient="bg-gradient-to-br from-red-50 to-pink-50 border border-red-100"
-            iconBg="bg-red-100"
-          />
-          <InsightCard
-            icon={<Droplets size={18} className="text-blue-500"/>}
-            title="Stay Hydrated"
-            description="You're doing well! Keep drinking enough water every day."
-            gradient="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-100"
-            iconBg="bg-blue-100"
-          />
-        </div>
-      </div>
-
-      {/* SECTION 6 — EXTRA ANALYTICS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <WeeklyTrendsCard />
-        <MedicationCard />
-        <CaloriesCard />
-        <StressCard />
-      </div>
-
-      {/* SECTION 7 — SUMMARY BAR */}
-      <Card className="p-5">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div className="flex-1">
-            <p className="text-sm font-bold text-gray-700">Summary</p>
-            <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">You are doing great! Your overall health is excellent. Keep maintaining your healthy habits.</p>
-          </div>
-          <div className="flex flex-wrap gap-4 sm:gap-6 lg:gap-8">
-            {[
-              { icon: <Footprints size={16} className="text-blue-500"/>, label: "Avg Steps", value: "8,432", trend: "↑ 10%", trendColor: "text-emerald-500" },
-              { icon: <Droplets size={16} className="text-cyan-500"/>, label: "Water Intake", value: "2.4 L", trend: "↑ 8%", trendColor: "text-emerald-500" },
-              { icon: <Calendar size={16} className="text-purple-500"/>, label: "Active Days", value: "22/30", trend: "↑ 5 days", trendColor: "text-emerald-500" },
-              { icon: <Heart size={16} className="text-red-400"/>, label: "Avg Resting HR", value: "64 bpm", trend: "↓ 4 bpm", trendColor: "text-emerald-500" },
-            ].map(s => (
-              <div key={s.label} className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-100 shrink-0">
-                  {s.icon}
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400 leading-tight">{s.label}</p>
-                  <p className="text-sm font-extrabold text-gray-800">{s.value}</p>
-                  <p className={`text-[10px] font-semibold ${s.trendColor}`}>{s.trend}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </Card>
+<MetricCard
+  icon={<Activity size={16}/>}
+  label="Distance"
+  value={String(
+    (
+      (dashboardData?.distance?.bucket?.[0]?.dataset?.[0]?.point?.[0]?.value?.[0]?.fpVal || 0) /
+      1000
+    ).toFixed(2)
+  )}
+  unit="km"
+  trend="Live"
+  trendUp
+  color="#10b981"
+  sparkData={sparkActivity}
+  glowColor="#10b981"
+/>
     </div>
   );
 }
