@@ -36,7 +36,7 @@ interface UseQRScannerReturn {
   switchCamera: () => Promise<void>;
   toggleTorch: () => Promise<void>;
   isTorchOn: boolean;
-  cameras: MediaDeviceInfo[];
+  cameras: any[];
   currentCamera: string | null;
 }
 
@@ -51,7 +51,7 @@ export function useQRScanner(
   const [error, setError] = useState<string | null>(null);
   const [lastScan, setLastScan] = useState<QRScanResult | null>(null);
   const [isTorchOn, setIsTorchOn] = useState(false);
-  const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
+  const [cameras, setCameras] = useState<any[]>([]);
   const [currentCamera, setCurrentCamera] = useState<string | null>(null);
   const [currentCameraIndex, setCurrentCameraIndex] = useState(0);
 

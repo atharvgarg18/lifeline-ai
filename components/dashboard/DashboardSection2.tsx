@@ -795,14 +795,17 @@ export default function AIHealthIntelligence() {
 
           {/* Vital metric selectors */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 mb-5">
-            {VITALS.map((v) => (
-              <VitalMetricCard
-                key={v.key}
-                {...v}
-                active={activeVital === v.key}
-                onClick={() => setActiveVital(v.key)}
-              />
-            ))}
+            {VITALS.map((v) => {
+              const { key, ...vitalProps } = v;
+              return (
+                <VitalMetricCard
+                  key={key}
+                  {...vitalProps}
+                  active={activeVital === key}
+                  onClick={() => setActiveVital(key)}
+                />
+              );
+            })}
           </div>
 
           {/* Chart */}

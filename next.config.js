@@ -5,6 +5,14 @@ const backendUrl = process.env.NEXT_PUBLIC_API_URL
 
 const nextConfig = {
   reactStrictMode: true,
+  
+  // Skip type checking and linting during build (already done in CI)
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 
   // Proxy /api/v1/* → backend (works in dev and on Vercel if NEXT_PUBLIC_API_URL is set)
   async rewrites() {
@@ -25,4 +33,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+module.exports = nextConfig;

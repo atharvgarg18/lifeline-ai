@@ -26,7 +26,8 @@ export default function APITestPage() {
       setGeocodeTest(data)
     } catch (err) {
       console.error('Error:', err)
-      setGeocodeTest({ error: err.message })
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
+      setGeocodeTest({ error: errorMessage })
     } finally {
       setLoading(false)
     }

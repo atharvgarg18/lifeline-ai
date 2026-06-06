@@ -18,7 +18,7 @@ import {
   Zap,
   QrCode,
 } from "lucide-react";
-import HealthMonitoringSection from "./HealthMonitoringSection";
+import HealthMonitoringSection from "./sections/HealthMonitoringSection";
 import RecentAlerts from "./cards/RecentAlerts";
 import BloodBank from "./cards/BloodBank";
 import NearbyHospitals from "./cards/NearbyHospitals";
