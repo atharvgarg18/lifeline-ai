@@ -20,7 +20,7 @@ export class PatientProfileController {
       const { patientId } = req.params;
 
       if (!patientId) {
-        throw new AppError('Patient ID is required', 400);
+        throw new AppError('MISSING_PATIENT_ID', 400, 'Patient ID is required');
       }
 
       // Generate QR code with unique identifier
@@ -53,7 +53,7 @@ export class PatientProfileController {
       const { patientId } = req.params;
 
       if (!patientId) {
-        throw new AppError('Patient ID is required', 400);
+        throw new AppError('MISSING_PATIENT_ID', 400, 'Patient ID is required');
       }
 
       // Get active QR code

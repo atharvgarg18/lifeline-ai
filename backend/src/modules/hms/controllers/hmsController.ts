@@ -23,7 +23,7 @@ export class HMSController {
       const { qrData, hospitalId } = req.body;
 
       if (!qrData || !hospitalId) {
-        throw new AppError('QR data and hospital ID are required', 400);
+        throw new AppError('MISSING_REQUIRED_FIELDS', 400, 'QR data and hospital ID are required');
       }
 
       // Validate QR code
@@ -89,7 +89,7 @@ export class HMSController {
 
       // Validate required fields
       if (!patientId || !hospitalId || !admissionType || !bedType || !symptoms) {
-        throw new AppError('Missing required fields', 400);
+        throw new AppError('MISSING_REQUIRED_FIELDS', 400, 'Missing required fields');
       }
 
       // Get user ID from auth middleware
@@ -128,7 +128,7 @@ export class HMSController {
       const { hospitalId } = req.query;
 
       if (!hospitalId) {
-        throw new AppError('Hospital ID is required', 400);
+        throw new AppError('MISSING_HOSPITAL_ID', 400, 'Hospital ID is required');
       }
 
       // Get requests where hospital is in current batch and status is PENDING
@@ -188,7 +188,7 @@ export class HMSController {
       const { requestId, hospitalId, bedId } = req.body;
 
       if (!requestId || !hospitalId || !bedId) {
-        throw new AppError('Missing required fields', 400);
+        throw new AppError('MISSING_REQUIRED_FIELDS', 400, 'Missing required fields');
       }
 
       // Use EmergencySOS model instead of EmergencyRequest
@@ -200,11 +200,11 @@ export class HMSController {
       const emergency = await EmergencySosModel.findById(requestId);
       
       if (!emergency) {
-        throw new AppError('Emergency not found', 404);
+        throw new AppError('EMERGENCY_NOT_FOUND', 404, 'Emergency not found');
       }
 
       if (emergency.status !== 'INITIATED' && emergency.status !== 'DISPATCHED') {
-        throw new AppError('Emergency is no longer pending', 400);
+        throw new AppError('EMERGENCY_NOT_PENDING', 400, 'Emergency is no longer pending');
       }
 
       // Verify bed availability
@@ -215,14 +215,14 @@ export class HMSController {
       });
 
       if (!bed) {
-        throw new AppError('Selected bed is not available', 400);
+        throw new AppError('BED_NOT_AVAILABLE', 400, 'Selected bed is not available');
       }
 
       // Get hospital details
       const hospital = await Hospital.findOne({ hospitalId });
 
       if (!hospital) {
-        throw new AppError('Hospital not found', 404);
+        throw new AppError('HOSPITAL_NOT_FOUND', 404, 'Hospital not found');
       }
 
       // Update emergency status
@@ -241,8 +241,11 @@ export class HMSController {
 
       // Allocate bed
       bed.status = 'OCCUPIED';
-      bed.currentPatientId = emergency.patientId;
-      bed.currentAdmissionId = requestId; // Using emergency ID as admission ID for now
+      bed.currentPatient = {
+        patientId: emergency.patientId,
+        admissionId: requestId, // Using emergency ID as admission ID for now
+        admittedAt: new Date(),
+      };
       await bed.save();
 
       // Emit WebSocket event to patient
@@ -299,7 +302,7 @@ export class HMSController {
       const { requestId, hospitalId, reason } = req.body;
 
       if (!requestId || !hospitalId) {
-        throw new AppError('Request ID and Hospital ID are required', 400);
+        throw new AppError('MISSING_REQUIRED_FIELDS', 400, 'Request ID and Hospital ID are required');
       }
 
       // Use EmergencySOS model
@@ -309,11 +312,11 @@ export class HMSController {
       const emergency = await EmergencySosModel.findById(requestId);
       
       if (!emergency) {
-        throw new AppError('Emergency not found', 404);
+        throw new AppError('EMERGENCY_NOT_FOUND', 404, 'Emergency not found');
       }
 
       if (emergency.status !== 'INITIATED' && emergency.status !== 'DISPATCHED') {
-        throw new AppError('Emergency is no longer pending', 400);
+        throw new AppError('EMERGENCY_NOT_PENDING', 400, 'Emergency is no longer pending');
       }
 
       // Add timeline entry
@@ -348,7 +351,7 @@ export class HMSController {
       const { hospitalId, status, bedType, ward, floor } = req.query;
 
       if (!hospitalId) {
-        throw new AppError('Hospital ID is required', 400);
+        throw new AppError('MISSING_HOSPITAL_ID', 400, 'Hospital ID is required');
       }
 
       const beds = await BedService.getHospitalBeds(hospitalId as string, {
@@ -377,7 +380,7 @@ export class HMSController {
       const { hospitalId } = req.query;
 
       if (!hospitalId) {
-        throw new AppError('Hospital ID is required', 400);
+        throw new AppError('MISSING_HOSPITAL_ID', 400, 'Hospital ID is required');
       }
 
       const availability = await BedService.getBedAvailability(hospitalId as string);
@@ -401,7 +404,7 @@ export class HMSController {
       const { bedId, patientId, admissionId } = req.body;
 
       if (!bedId || !patientId || !admissionId) {
-        throw new AppError('Missing required fields', 400);
+        throw new AppError('MISSING_REQUIRED_FIELDS', 400, 'Missing required fields');
       }
 
       const bed = await BedService.allocateBed(bedId, patientId, admissionId);
@@ -425,7 +428,7 @@ export class HMSController {
       const { bedId } = req.body;
 
       if (!bedId) {
-        throw new AppError('Bed ID is required', 400);
+        throw new AppError('MISSING_BED_ID', 400, 'Bed ID is required');
       }
 
       const bed = await BedService.releaseBed(bedId);
@@ -449,7 +452,7 @@ export class HMSController {
       const { hospitalId, status, admissionType, fromDate, toDate } = req.query;
 
       if (!hospitalId) {
-        throw new AppError('Hospital ID is required', 400);
+        throw new AppError('MISSING_HOSPITAL_ID', 400, 'Hospital ID is required');
       }
 
       const admissions = await AdmissionService.getHospitalAdmissions(
@@ -483,7 +486,7 @@ export class HMSController {
       const admission = await AdmissionService.getAdmission(admissionId);
 
       if (!admission) {
-        throw new AppError('Admission not found', 404);
+        throw new AppError('ADMISSION_NOT_FOUND', 404, 'Admission not found');
       }
 
       res.json(successResponse(admission));

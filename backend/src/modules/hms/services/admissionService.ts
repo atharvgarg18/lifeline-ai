@@ -25,7 +25,7 @@ export class AdmissionService {
     });
 
     if (beds.length === 0) {
-      throw new AppError(`No ${data.bedType} beds available`, 400);
+      throw new AppError('NO_BEDS_AVAILABLE', 400, `No ${data.bedType} beds available`);
     }
 
     // Select first available bed
@@ -142,7 +142,7 @@ export class AdmissionService {
     const admission = await Admission.findOne({ admissionId });
 
     if (!admission) {
-      throw new AppError('Admission not found', 404);
+      throw new AppError('ADMISSION_NOT_FOUND', 404, 'Admission not found');
     }
 
     admission.vitals.push({
@@ -172,7 +172,7 @@ export class AdmissionService {
     const admission = await Admission.findOne({ admissionId });
 
     if (!admission) {
-      throw new AppError('Admission not found', 404);
+      throw new AppError('ADMISSION_NOT_FOUND', 404, 'Admission not found');
     }
 
     const prescriptionId = `PRE-${Date.now()}`;
@@ -200,7 +200,7 @@ export class AdmissionService {
     const admission = await Admission.findOne({ admissionId });
 
     if (!admission) {
-      throw new AppError('Admission not found', 404);
+      throw new AppError('ADMISSION_NOT_FOUND', 404, 'Admission not found');
     }
 
     const testId = `TST-${Date.now()}`;
@@ -241,7 +241,7 @@ export class AdmissionService {
     const admission = await Admission.findOne({ admissionId });
 
     if (!admission) {
-      throw new AppError('Admission not found', 404);
+      throw new AppError('ADMISSION_NOT_FOUND', 404, 'Admission not found');
     }
 
     admission.billing.charges.push({
@@ -267,7 +267,7 @@ export class AdmissionService {
     const admission = await Admission.findOne({ admissionId });
 
     if (!admission) {
-      throw new AppError('Admission not found', 404);
+      throw new AppError('ADMISSION_NOT_FOUND', 404, 'Admission not found');
     }
 
     const paymentId = `PAY-${Date.now()}`;
@@ -301,11 +301,11 @@ export class AdmissionService {
     const admission = await Admission.findOne({ admissionId });
 
     if (!admission) {
-      throw new AppError('Admission not found', 404);
+      throw new AppError('ADMISSION_NOT_FOUND', 404, 'Admission not found');
     }
 
     if (admission.status !== 'ADMITTED') {
-      throw new AppError('Patient is not currently admitted', 400);
+      throw new AppError('PATIENT_NOT_ADMITTED', 400, 'Patient is not currently admitted');
     }
 
     // Update admission
@@ -335,7 +335,7 @@ export class AdmissionService {
     const admission = await Admission.findOne({ admissionId });
 
     if (!admission) {
-      throw new AppError('Admission not found', 404);
+      throw new AppError('ADMISSION_NOT_FOUND', 404, 'Admission not found');
     }
 
     admission.notes.push({
@@ -360,7 +360,7 @@ export class AdmissionService {
     const admission = await Admission.findOne({ admissionId });
 
     if (!admission) {
-      throw new AppError('Admission not found', 404);
+      throw new AppError('ADMISSION_NOT_FOUND', 404, 'Admission not found');
     }
 
     admission.status = 'TRANSFERRED';

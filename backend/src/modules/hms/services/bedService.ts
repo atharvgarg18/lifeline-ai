@@ -87,7 +87,7 @@ export class BedService {
     const bed = await Bed.findOne({ bedId, status: 'AVAILABLE' });
 
     if (!bed) {
-      throw new AppError('Bed is not available', 400);
+      throw new AppError('BED_NOT_AVAILABLE', 400, 'Bed is not available');
     }
 
     bed.status = 'OCCUPIED';
@@ -109,7 +109,7 @@ export class BedService {
     const bed = await Bed.findOne({ bedId });
 
     if (!bed) {
-      throw new AppError('Bed not found', 404);
+      throw new AppError('BED_NOT_FOUND', 404, 'Bed not found');
     }
 
     bed.status = 'CLEANING';
@@ -126,7 +126,7 @@ export class BedService {
     const bed = await Bed.findOne({ bedId });
 
     if (!bed) {
-      throw new AppError('Bed not found', 404);
+      throw new AppError('BED_NOT_FOUND', 404, 'Bed not found');
     }
 
     bed.status = 'AVAILABLE';
@@ -143,7 +143,7 @@ export class BedService {
     const bed = await Bed.findOne({ bedId, status: 'AVAILABLE' });
 
     if (!bed) {
-      throw new AppError('Bed is not available', 400);
+      throw new AppError('BED_NOT_AVAILABLE', 400, 'Bed is not available');
     }
 
     bed.status = 'RESERVED';
@@ -180,11 +180,11 @@ export class BedService {
     const bed = await Bed.findOne({ bedId });
 
     if (!bed) {
-      throw new AppError('Bed not found', 404);
+      throw new AppError('BED_NOT_FOUND', 404, 'Bed not found');
     }
 
     if (bed.status === 'OCCUPIED') {
-      throw new AppError('Cannot schedule maintenance for occupied bed', 400);
+      throw new AppError('BED_OCCUPIED', 400, 'Cannot schedule maintenance for occupied bed');
     }
 
     bed.status = 'MAINTENANCE';
@@ -204,7 +204,7 @@ export class BedService {
     const bed = await Bed.findOne({ bedId });
 
     if (!bed) {
-      throw new AppError('Bed not found', 404);
+      throw new AppError('BED_NOT_FOUND', 404, 'Bed not found');
     }
 
     if (bed.maintenanceSchedule) {
@@ -298,7 +298,7 @@ export class BedService {
     );
 
     if (!bed) {
-      throw new AppError('Bed not found', 404);
+      throw new AppError('BED_NOT_FOUND', 404, 'Bed not found');
     }
 
     return bed;
@@ -311,11 +311,11 @@ export class BedService {
     const bed = await Bed.findOne({ bedId });
 
     if (!bed) {
-      throw new AppError('Bed not found', 404);
+      throw new AppError('BED_NOT_FOUND', 404, 'Bed not found');
     }
 
     if (bed.status === 'OCCUPIED') {
-      throw new AppError('Cannot delete occupied bed', 400);
+      throw new AppError('BED_OCCUPIED', 400, 'Cannot delete occupied bed');
     }
 
     await Bed.deleteOne({ bedId });

@@ -44,7 +44,7 @@ export class EmergencySosService {
         longitude: payload.longitude,
         address: payload.location, // The address string
       } as any,
-      description: payload.description,
+      description: payload.description || 'Emergency assistance required',
       severityScore: payload.severityScore || 7.5,
       priority: payload.severityScore && payload.severityScore >= 8 ? 'CRITICAL' : 'HIGH',
       status: EMERGENCY_STATUS.INITIATED as EmergencySOS['status'],

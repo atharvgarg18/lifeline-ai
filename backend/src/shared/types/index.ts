@@ -139,8 +139,15 @@ export interface TimelineEntry {
 export interface TriggerSOSRequest {
   patientId: string;
   emergencyType: EmergencyType;
-  location: Location;
-  description: string;
+  location: string; // Address as string
+  latitude: number;
+  longitude: number;
+  description?: string;
+  severityScore?: number;
+  symptoms?: string[];
+  medicalHistory?: string;
+  contactName?: string;
+  contactPhone?: string;
   contactMethod?: 'PHONE' | 'SMS' | 'WHATSAPP';
 }
 

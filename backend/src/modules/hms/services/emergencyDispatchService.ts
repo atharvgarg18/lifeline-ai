@@ -54,7 +54,7 @@ export class EmergencyDispatchService {
     const scoredHospitals = await this.scoreHospitals(emergencyDetails);
 
     if (scoredHospitals.length === 0) {
-      throw new AppError('No hospitals available for emergency', 404);
+      throw new AppError('NO_HOSPITALS_AVAILABLE', 404, 'No hospitals available for emergency');
     }
 
     // Send first batch
@@ -288,11 +288,11 @@ export class EmergencyDispatchService {
     const request = await EmergencyRequest.findOne({ requestId });
 
     if (!request) {
-      throw new AppError('Emergency request not found', 404);
+      throw new AppError('EMERGENCY_NOT_FOUND', 404, 'Emergency request not found');
     }
 
     if (request.status !== 'PENDING') {
-      throw new AppError('Emergency request is no longer pending', 400);
+      throw new AppError('EMERGENCY_NOT_PENDING', 400, 'Emergency request is no longer pending');
     }
 
     // Verify bed availability
@@ -303,14 +303,14 @@ export class EmergencyDispatchService {
     });
 
     if (!bed) {
-      throw new AppError('Selected bed is not available', 400);
+      throw new AppError('BED_NOT_AVAILABLE', 400, 'Selected bed is not available');
     }
 
     // Get hospital details
     const hospital = await Hospital.findOne({ hospitalId });
 
     if (!hospital) {
-      throw new AppError('Hospital not found', 404);
+      throw new AppError('HOSPITAL_NOT_FOUND', 404, 'Hospital not found');
     }
 
     // Mark as accepted
