@@ -1,157 +1,83 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { Html5QrcodeScanner, Html5QrcodeScanType } from 'html5-qrcode'
+import { useState } from 'react'
+import { useQRScanner } from '@/hooks/useQRScanner'
 import { hmsApi } from '@/services/hmsApi'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
-import { Camera, User, AlertCircle, CheckCircle, X } from 'lucide-react'
+import { Camera, User, AlertCircle, CheckCircle, X, FlashlightOff, Flashlight, SwitchCamera } from 'lucide-react'
 
 export default function QRScannerPage() {
-  const [scanning, setScanning] = useState(false)
   const [patientData, setPatientData] = useState<any>(null)
-  const [cameraPermission, setCameraPermission] = useState<'granted' | 'denied' | 'prompt'>('prompt')
-  const scannerRef = useRef<Html5QrcodeScanner | null>(null)
   const router = useRouter()
 
-  useEffect(() => {
-    // Check camera permission on mount
-    if (navigator.permissions) {
-      navigator.permissions.query({ name: 'camera' as PermissionName }).then((result) => {
-        setCameraPermission(result.state as any)
-      })
-    }
-  }, [])
+  const {
+    isScanning,
+    hasPermission,
+    error: scanError,
+    startScanning,
+    stopScanning,
+    resetError,
+    toggleTorch,
+    switchCamera,
+    isTorchOn,
+    cameras,
+  } = useQRScanner(
+    'qr-reader',
+    async (result) => {
+      // QR code scanned successfully
+      console.log('QR Code scanned:', result.decodedText)
 
-  useEffect(() => {
-    if (scanning && !scannerRef.current) {
+      // Stop scanner immediately
+      await stopScanning()
+
+      // Show loading toast
+      const loadingToast = toast.loading('Validating QR code...')
+
       try {
-        const scanner = new Html5QrcodeScanner(
-          'qr-reader',
-          {
-            fps: 10,
-            qrbox: { width: 250, height: 250 },
-            aspectRatio: 1.0,
-            rememberLastUsedCamera: true,
-            supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
-            showTorchButtonIfSupported: true,
-            showZoomSliderIfSupported: true,
-            defaultZoomValueIfSupported: 2,
-          },
-          /* verbose= */ false
-        )
+        const hospitalId = process.env.NEXT_PUBLIC_HOSPITAL_ID || 'HOSP-001'
+        const response = await hmsApi.scanQRCode(result.decodedText, hospitalId)
 
-        scanner.render(onScanSuccess, onScanError)
-        scannerRef.current = scanner
-      } catch (error) {
-        console.error('Failed to initialize scanner:', error)
-        toast.error('Failed to initialize camera scanner')
-        setScanning(false)
-      }
-    }
+        toast.dismiss(loadingToast)
 
-    return () => {
-      if (scannerRef.current) {
-        try {
-          scannerRef.current.clear().catch(console.error)
-        } catch (e) {
-          console.error('Error clearing scanner:', e)
+        if (response.success && response.data.qrValid) {
+          setPatientData({
+            ...response.data.patient,
+            qrCodeId: response.data.qrCodeId,
+          })
+          toast.success('✓ Patient verified successfully', {
+            duration: 3000,
+            icon: '✓',
+          })
+        } else {
+          toast.error('Invalid or expired QR code')
+          setTimeout(() => handleStartScanning(), 2000)
         }
-        scannerRef.current = null
+      } catch (error: any) {
+        toast.dismiss(loadingToast)
+        console.error('QR validation failed:', error)
+        toast.error('Failed to validate QR code')
+        setTimeout(() => handleStartScanning(), 2000)
       }
+    },
+    (error) => {
+      console.error('Scanner error:', error)
     }
-  }, [scanning])
-
-  const onScanSuccess = async (decodedText: string) => {
-    console.log('QR Code scanned:', decodedText)
-
-    // Stop scanner immediately to prevent multiple scans
-    if (scannerRef.current) {
-      try {
-        await scannerRef.current.clear()
-      } catch (e) {
-        console.error('Error clearing scanner:', e)
-      }
-      scannerRef.current = null
-    }
-    setScanning(false)
-
-    // Show loading toast
-    const loadingToast = toast.loading('Validating QR code...')
-
-    // Validate QR code with backend
-    try {
-      const hospitalId = process.env.NEXT_PUBLIC_HOSPITAL_ID || 'HOSP-001'
-      const result = await hmsApi.scanQRCode(decodedText, hospitalId)
-
-      toast.dismiss(loadingToast)
-
-      if (result.success && result.data.qrValid) {
-        setPatientData({
-          ...result.data.patient,
-          qrCodeId: result.data.qrCodeId,
-        })
-        toast.success('✓ Patient QR code verified successfully', { duration: 3000 })
-      } else {
-        toast.error('Invalid or expired QR code')
-        // Allow scanning again after error
-        setTimeout(() => startScanning(), 2000)
-      }
-    } catch (error: any) {
-      toast.dismiss(loadingToast)
-      console.error('QR validation failed:', error)
-      toast.error(error.message || 'Failed to validate QR code')
-      // Allow scanning again after error
-      setTimeout(() => startScanning(), 2000)
-    }
-  }
-
-  const onScanError = (error: any) => {
-    // Silently ignore scan errors (happens frequently during scanning)
-    // Only log to console for debugging
-    if (error && !error.includes('NotFoundException')) {
-      console.debug('Scan error:', error)
-    }
-  }
-
-  const startScanning = async () => {
-    // Request camera permission first
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-      // Close the stream immediately, just checking permission
-      stream.getTracks().forEach(track => track.stop())
-      
-      setCameraPermission('granted')
-      setScanning(true)
-      setPatientData(null)
-    } catch (error: any) {
-      console.error('Camera permission denied:', error)
-      setCameraPermission('denied')
-      toast.error('Camera access denied. Please allow camera access in your browser settings.')
-    }
-  }
-
-  const stopScanning = () => {
-    if (scannerRef.current) {
-      try {
-        scannerRef.current.clear().catch(console.error)
-      } catch (e) {
-        console.error('Error clearing scanner:', e)
-      }
-      scannerRef.current = null
-    }
-    setScanning(false)
-  }
+  )
 
   const handleQuickAdmit = () => {
     if (!patientData) return
-
-    // Navigate to quick admit with patient data
     const params = new URLSearchParams({
       patientId: patientData.patientId,
       qrCodeId: patientData.qrCodeId,
     })
     router.push(`/dashboard/admissions/quick-admit?${params}`)
+  }
+
+  const handleStartScanning = () => {
+    resetError()
+    setPatientData(null)
+    startScanning()
   }
 
   return (
@@ -162,12 +88,12 @@ export default function QRScannerPage() {
           <div>
             <h2 className="text-2xl font-bold text-gray-900">QR Code Scanner</h2>
             <p className="text-sm text-gray-600 mt-1">
-              Scan patient QR code for quick admission
+              Scan patient QR code for instant admission
             </p>
           </div>
-          {!scanning && !patientData && (
+          {!isScanning && !patientData && (
             <button
-              onClick={startScanning}
+              onClick={handleStartScanning}
               className="flex items-center space-x-2 px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors"
             >
               <Camera className="w-5 h-5" />
@@ -177,17 +103,97 @@ export default function QRScannerPage() {
         </div>
       </div>
 
+      {/* Permission Denied */}
+      {hasPermission === false && (
+        <div className="bg-danger-50 border border-danger-200 rounded-lg p-6">
+          <div className="flex items-start">
+            <AlertCircle className="w-6 h-6 text-danger-600 mr-3 mt-1" />
+            <div className="flex-1">
+              <h3 className="text-sm font-medium text-danger-900 mb-2">
+                Camera Access Required
+              </h3>
+              <p className="text-sm text-danger-700 mb-4">
+                To scan QR codes, please allow camera access in your browser settings.
+              </p>
+              <div className="bg-white rounded-lg p-4 mb-4">
+                <p className="text-sm font-medium text-gray-900 mb-2">For Mobile Devices:</p>
+                <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+                  <li>Tap the lock/info icon in your browser's address bar</li>
+                  <li>Find "Camera" permissions</li>
+                  <li>Select "Allow"</li>
+                  <li>Refresh this page</li>
+                </ol>
+              </div>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-danger-600 text-white font-medium rounded-lg hover:bg-danger-700 transition-colors text-sm"
+              >
+                Refresh Page
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Scanner Error */}
+      {scanError && !patientData && (
+        <div className="bg-warning-50 border border-warning-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <AlertCircle className="w-5 h-5 text-warning-600 mr-2" />
+              <p className="text-sm text-warning-800">{scanError}</p>
+            </div>
+            <button
+              onClick={handleStartScanning}
+              className="text-sm font-medium text-warning-900 hover:text-warning-700"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Scanner */}
-      {scanning && (
+      {isScanning && (
         <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
           <div className="flex flex-col items-center space-y-4">
-            <div className="w-full max-w-lg">
+            <div className="w-full max-w-lg relative">
               <div id="qr-reader" className="rounded-lg overflow-hidden"></div>
+              
+              {/* Scanner Controls */}
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center space-x-3 z-10">
+                {/* Torch/Flashlight Toggle */}
+                <button
+                  onClick={toggleTorch}
+                  className="p-3 bg-black bg-opacity-60 text-white rounded-full hover:bg-opacity-80 transition-all shadow-lg"
+                  title={isTorchOn ? 'Turn off flashlight' : 'Turn on flashlight'}
+                >
+                  {isTorchOn ? (
+                    <Flashlight className="w-5 h-5" />
+                  ) : (
+                    <FlashlightOff className="w-5 h-5" />
+                  )}
+                </button>
+
+                {/* Camera Switch */}
+                {cameras.length > 1 && (
+                  <button
+                    onClick={switchCamera}
+                    className="p-3 bg-black bg-opacity-60 text-white rounded-full hover:bg-opacity-80 transition-all shadow-lg"
+                    title="Switch camera"
+                  >
+                    <SwitchCamera className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
             </div>
             
             <div className="text-center text-sm text-gray-600 space-y-2">
-              <p>📷 Position QR code within the frame</p>
-              <p className="text-xs">Scanner will automatically detect and verify the QR code</p>
+              <p className="font-medium">📷 Position QR code within the frame</p>
+              <p className="text-xs">Scanner will automatically detect and verify the code</p>
+              <p className="text-xs text-gray-500">
+                {cameras.length} camera(s) available
+              </p>
             </div>
 
             <button
@@ -197,34 +203,6 @@ export default function QRScannerPage() {
               <X className="w-4 h-4" />
               <span>Stop Scanner</span>
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* Camera Permission Denied */}
-      {cameraPermission === 'denied' && !scanning && !patientData && (
-        <div className="bg-danger-50 border border-danger-200 rounded-lg p-6">
-          <div className="flex items-start">
-            <AlertCircle className="w-6 h-6 text-danger-600 mr-3 mt-1" />
-            <div className="flex-1">
-              <h3 className="text-sm font-medium text-danger-900 mb-2">
-                Camera Access Denied
-              </h3>
-              <p className="text-sm text-danger-700 mb-4">
-                To scan QR codes, you need to allow camera access in your browser settings.
-              </p>
-              <ol className="list-decimal list-inside space-y-1 text-sm text-danger-700 mb-4">
-                <li>Click the camera icon in your browser's address bar</li>
-                <li>Select "Always allow" for camera access</li>
-                <li>Refresh this page</li>
-              </ol>
-              <button
-                onClick={() => window.location.reload()}
-                className="px-4 py-2 bg-danger-600 text-white font-medium rounded-lg hover:bg-danger-700 transition-colors text-sm"
-              >
-                Refresh Page
-              </button>
-            </div>
           </div>
         </div>
       )}
@@ -369,7 +347,7 @@ export default function QRScannerPage() {
               <button
                 onClick={() => {
                   setPatientData(null)
-                  startScanning()
+                  handleStartScanning()
                 }}
                 className="px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors"
               >
@@ -381,18 +359,19 @@ export default function QRScannerPage() {
       )}
 
       {/* Instructions */}
-      {!scanning && !patientData && (
+      {!isScanning && !patientData && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
           <h3 className="text-sm font-medium text-blue-900 mb-3">
-            How to use QR Scanner:
+            Mobile QR Scanner Instructions:
           </h3>
           <ol className="list-decimal list-inside space-y-2 text-sm text-blue-800">
-            <li>Click "Start Scanner" button above</li>
-            <li>Allow camera access when prompted</li>
-            <li>Position patient's QR code in front of the camera</li>
-            <li>Wait for automatic scan and verification</li>
-            <li>Review patient information</li>
-            <li>Click "Quick Admit" to start admission process</li>
+            <li>Tap "Start Scanner" button above</li>
+            <li>Allow camera access when prompted by your browser</li>
+            <li>Hold phone steady and position QR code in center of frame</li>
+            <li>Keep QR code well-lit and at arms length for best results</li>
+            <li>Scanner will automatically detect and verify the code</li>
+            <li>Use flashlight button if needed in low light</li>
+            <li>Switch camera button to toggle between front/rear cameras</li>
           </ol>
         </div>
       )}
