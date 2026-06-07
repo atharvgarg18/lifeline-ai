@@ -9,13 +9,7 @@ export class QRService {
   /**
    * Generate QR code for patient
    */
-  static async generateQRCode(
-    userId: string,
-    healthIdNumber: string,
-    name: string,
-    email: string,
-    phone: string
-  ): Promise<{
+  static async generateQRCode(patientId: string): Promise<{
     qrCodeId: string;
     qrData: string;
     expiresAt: Date;
@@ -27,11 +21,7 @@ export class QRService {
     // Create payload
     const payload = {
       qrCodeId,
-      userId,
-      healthIdNumber,
-      name,
-      email,
-      phone,
+      patientId,
       timestamp,
       version: 1,
     };
@@ -50,7 +40,7 @@ export class QRService {
     // Save to database
     await QRCode.create({
       qrCodeId,
-      patientId: userId, // Store userId as patientId for compatibility
+      patientId,
       qrData,
       signature,
       generatedAt: new Date(),
@@ -71,11 +61,7 @@ export class QRService {
    */
   static async validateQRCode(qrData: string): Promise<{
     valid: boolean;
-    userId?: string;
-    healthIdNumber?: string;
-    name?: string;
-    email?: string;
-    phone?: string;
+    patientId?: string;
     qrCodeId?: string;
     expired?: boolean;
     reason?: string;
@@ -83,11 +69,11 @@ export class QRService {
     try {
       // Decode QR data
       const decoded = JSON.parse(Buffer.from(qrData, 'base64').toString('utf-8'));
-      const { qrCodeId, userId, healthIdNumber, name, email, phone, timestamp, signature, version } = decoded;
+      const { qrCodeId, patientId, timestamp, signature, version } = decoded;
 
       // Verify signature
       const isSignatureValid = this.verifySignature(
-        { qrCodeId, userId, healthIdNumber, name, email, phone, timestamp, version },
+        { qrCodeId, patientId, timestamp, version },
         signature
       );
 
@@ -104,7 +90,7 @@ export class QRService {
       if (!qrCode) {
         return {
           valid: false,
-          reason: 'QR code not found in database',
+          reason: 'QR code not found',
         };
       }
 
@@ -136,11 +122,7 @@ export class QRService {
 
       return {
         valid: true,
-        userId,
-        healthIdNumber,
-        name,
-        email,
-        phone,
+        patientId: qrCode.patientId,
         qrCodeId: qrCode.qrCodeId,
       };
     } catch (error: any) {
@@ -188,9 +170,9 @@ export class QRService {
   /**
    * Get patient's active QR code
    */
-  static async getActiveQRCode(userId: string): Promise<IQRCode | null> {
+  static async getActiveQRCode(patientId: string): Promise<IQRCode | null> {
     return await QRCode.findOne({
-      patientId: userId, // patientId field stores userId
+      patientId,
       status: 'ACTIVE',
       expiresAt: { $gt: new Date() },
     }).sort({ createdAt: -1 });

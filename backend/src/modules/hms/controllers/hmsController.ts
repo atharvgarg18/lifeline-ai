@@ -11,6 +11,76 @@ import { AppError } from '../../../utils/AppError';
  */
 export class HMSController {
   /**
+   * Lookup patient by patient ID
+   * POST /api/v1/hms/patients/lookup
+   */
+  static async lookupPatient(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { patientId, hospitalId } = req.body;
+
+      if (!patientId || !hospitalId) {
+        throw new AppError('MISSING_REQUIRED_FIELDS', 400, 'Patient ID and hospital ID are required');
+      }
+
+      // Get patient profile by user ID (patient ID)
+      const { patientProfileRepository } = await import('../../patient-profile/patientProfileRepository');
+      const profile = await patientProfileRepository.findByUserId(patientId);
+
+      if (!profile) {
+        res.status(404).json({
+          success: false,
+          message: 'Patient profile not found',
+        });
+        return;
+      }
+
+      // Get user details
+      const { UserModel } = await import('../../auth/User.model');
+      const user = await UserModel.findById(patientId);
+
+      if (!user) {
+        res.status(404).json({
+          success: false,
+          message: 'Patient user not found',
+        });
+        return;
+      }
+
+      // Map emergency contacts to expected format
+      const emergencyContacts = (profile.emergencyContacts || []).map((contact: any) => ({
+        name: contact.name,
+        relationship: contact.relation, // Map 'relation' to 'relationship'
+        phone: contact.phoneNumber, // Map 'phoneNumber' to 'phone'
+      }));
+
+      // Build complete patient data
+      const patient = {
+        userId: patientId,
+        healthIdNumber: profile.healthIdNumber || 'N/A',
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        age: profile.age || 25, // Use profile age or default
+        gender: profile.gender || 'MALE', // Use profile gender or default
+        bloodGroup: profile.bloodGroup || 'UNKNOWN',
+        allergies: profile.allergies || [],
+        chronicDiseases: profile.chronicDiseases || [],
+        medications: profile.medications || [],
+        emergencyContacts: emergencyContacts,
+        medicalHistory: [],
+      };
+
+      res.json(successResponse(patient));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * Scan and validate QR code
    * POST /api/v1/hms/qr/scan
    */
@@ -38,20 +108,10 @@ export class HMSController {
         return;
       }
 
-      // Get full patient data from database using userId
-      const { UserModel } = await import('../../auth/User.model');
+      // Get real patient data from database
       const { patientProfileRepository } = await import('../../patient-profile/patientProfileRepository');
+      const profile = await patientProfileRepository.findByUserId(validation.patientId!);
 
-      const user = await UserModel.findById(validation.userId);
-      if (!user) {
-        res.status(404).json({
-          success: false,
-          message: 'Patient not found',
-        });
-        return;
-      }
-
-      const profile = await patientProfileRepository.findByUserId(validation.userId!);
       if (!profile) {
         res.status(404).json({
           success: false,
@@ -60,19 +120,40 @@ export class HMSController {
         return;
       }
 
+      // Get user details
+      const { UserModel } = await import('../../auth/User.model');
+      const user = await UserModel.findById(validation.patientId);
+
+      if (!user) {
+        res.status(404).json({
+          success: false,
+          message: 'Patient user not found',
+        });
+        return;
+      }
+
+      // Map emergency contacts to expected format
+      const emergencyContacts = (profile.emergencyContacts || []).map((contact: any) => ({
+        name: contact.name,
+        relationship: contact.relation,
+        phone: contact.phoneNumber,
+      }));
+
       // Build complete patient data
       const patient = {
-        userId: validation.userId,
-        healthIdNumber: validation.healthIdNumber || profile.healthIdNumber,
+        userId: validation.patientId,
+        healthIdNumber: profile.healthIdNumber || 'N/A',
         name: user.name,
         email: user.email,
         phone: user.phone,
-        bloodGroup: profile.bloodGroup,
+        age: profile.age || 25,
+        gender: profile.gender || 'MALE',
+        bloodGroup: profile.bloodGroup || 'UNKNOWN',
         allergies: profile.allergies || [],
         chronicDiseases: profile.chronicDiseases || [],
         medications: profile.medications || [],
-        emergencyContacts: profile.emergencyContacts || [],
-        medicalHistory: [], // Add if needed
+        emergencyContacts: emergencyContacts,
+        medicalHistory: [],
       };
 
       res.json(

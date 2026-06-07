@@ -18,14 +18,17 @@ export class AdmissionService {
     qrCodeId?: string;
     emergencyDetails?: any;
   }): Promise<IAdmission> {
+    // Normalize bedType to uppercase
+    const normalizedBedType = data.bedType.toUpperCase();
+    
     // Find available bed
     const beds = await BedService.getHospitalBeds(data.hospitalId, {
       status: 'AVAILABLE',
-      bedType: data.bedType,
+      bedType: normalizedBedType,
     });
 
     if (beds.length === 0) {
-      throw new AppError('NO_BEDS_AVAILABLE', 400, `No ${data.bedType} beds available`);
+      throw new AppError('NO_BEDS_AVAILABLE', 400, `No ${normalizedBedType} beds available`);
     }
 
     // Select first available bed
@@ -84,7 +87,14 @@ export class AdmissionService {
       );
     }
 
-    return admission;
+    // Return admission with bed details
+    return {
+      ...admission.toObject(),
+      bedNumber: selectedBed.bedNumber,
+      bedWard: selectedBed.ward,
+      bedFloor: selectedBed.floor,
+      bedRoom: selectedBed.room,
+    } as any;
   }
 
   /**

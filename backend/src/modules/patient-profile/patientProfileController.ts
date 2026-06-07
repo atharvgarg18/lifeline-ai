@@ -2,17 +2,14 @@ import { Request, Response, NextFunction } from 'express';
 import { QRService } from '../hms/services/qrService';
 import { successResponse } from '../../utils/response';
 import { AppError } from '../../utils/AppError';
-import { patientProfileRepository } from './patientProfileRepository';
-import { UserModel } from '../auth/User.model';
 
 /**
  * Patient Profile Controllers
  */
 export class PatientProfileController {
   /**
-   * Generate QR code for authenticated patient
-   * POST /api/v1/patient-profile/qr/generate
-   * Requires: Authentication
+   * Generate QR code for patient
+   * POST /api/v1/patient-profile/patients/:patientId/qr/generate
    */
   static async generateQR(
     req: Request,
@@ -20,33 +17,14 @@ export class PatientProfileController {
     next: NextFunction
   ): Promise<void> {
     try {
-      // Get authenticated user ID from JWT
-      const userId = req.user?.id;
+      const { patientId } = req.params;
 
-      if (!userId) {
-        throw new AppError('UNAUTHORIZED', 401, 'Authentication required');
+      if (!patientId) {
+        throw new AppError('MISSING_PATIENT_ID', 400, 'Patient ID is required');
       }
 
-      // Get user details
-      const user = await UserModel.findById(userId);
-      if (!user) {
-        throw new AppError('USER_NOT_FOUND', 404, 'User not found');
-      }
-
-      // Get patient profile
-      const profile = await patientProfileRepository.findByUserId(userId);
-      if (!profile) {
-        throw new AppError('PROFILE_NOT_FOUND', 404, 'Patient profile not found');
-      }
-
-      // Generate QR code with user ID (not patient ID)
-      const qrCode = await QRService.generateQRCode(
-        userId, 
-        profile.healthIdNumber,
-        user.name,
-        user.email,
-        user.phone
-      );
+      // Generate QR code with unique identifier
+      const qrCode = await QRService.generateQRCode(patientId);
 
       res.status(201).json(
         successResponse({
@@ -55,13 +33,6 @@ export class PatientProfileController {
           expiresAt: qrCode.expiresAt,
           generatedAt: new Date(),
           status: 'ACTIVE',
-          patientInfo: {
-            userId: userId,
-            healthIdNumber: profile.healthIdNumber,
-            name: user.name,
-            email: user.email,
-            phone: user.phone,
-          },
         }, 'QR code generated successfully')
       );
     } catch (error) {
@@ -70,9 +41,8 @@ export class PatientProfileController {
   }
 
   /**
-   * Get active QR code for authenticated patient
-   * GET /api/v1/patient-profile/qr/active
-   * Requires: Authentication
+   * Get active QR code for patient
+   * GET /api/v1/patient-profile/patients/:patientId/qr/active
    */
   static async getActiveQR(
     req: Request,
@@ -80,27 +50,14 @@ export class PatientProfileController {
     next: NextFunction
   ): Promise<void> {
     try {
-      // Get authenticated user ID from JWT
-      const userId = req.user?.id;
+      const { patientId } = req.params;
 
-      if (!userId) {
-        throw new AppError('UNAUTHORIZED', 401, 'Authentication required');
-      }
-
-      // Get user details
-      const user = await UserModel.findById(userId);
-      if (!user) {
-        throw new AppError('USER_NOT_FOUND', 404, 'User not found');
-      }
-
-      // Get patient profile
-      const profile = await patientProfileRepository.findByUserId(userId);
-      if (!profile) {
-        throw new AppError('PROFILE_NOT_FOUND', 404, 'Patient profile not found');
+      if (!patientId) {
+        throw new AppError('MISSING_PATIENT_ID', 400, 'Patient ID is required');
       }
 
       // Get active QR code
-      const qrCode = await QRService.getActiveQRCode(userId);
+      const qrCode = await QRService.getActiveQRCode(patientId);
 
       if (!qrCode) {
         res.json(
@@ -116,13 +73,6 @@ export class PatientProfileController {
           expiresAt: qrCode.expiresAt,
           generatedAt: qrCode.generatedAt,
           status: qrCode.status,
-          patientInfo: {
-            userId: userId,
-            healthIdNumber: profile.healthIdNumber,
-            name: user.name,
-            email: user.email,
-            phone: user.phone,
-          },
         })
       );
     } catch (error) {
@@ -131,48 +81,37 @@ export class PatientProfileController {
   }
 
   /**
-   * Get authenticated patient profile
-   * GET /api/v1/patient-profile/me
-   * Requires: Authentication
+   * Get patient profile
+   * GET /api/v1/patient-profile/patients/:patientId
    */
-  static async getMyProfile(
+  static async getPatientProfile(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
-      // Get authenticated user ID from JWT
-      const userId = req.user?.id;
+      const { patientId } = req.params;
 
-      if (!userId) {
-        throw new AppError('UNAUTHORIZED', 401, 'Authentication required');
-      }
-
-      // Get user details
-      const user = await UserModel.findById(userId);
-      if (!user) {
-        throw new AppError('USER_NOT_FOUND', 404, 'User not found');
-      }
-
-      // Get patient profile
-      const profile = await patientProfileRepository.findByUserId(userId);
-      if (!profile) {
-        throw new AppError('PROFILE_NOT_FOUND', 404, 'Patient profile not found');
-      }
-
+      // TODO: Implement actual patient profile fetch
+      // For now, return mock data
       res.json(
         successResponse({
-          userId: user._id,
-          healthIdNumber: profile.healthIdNumber,
-          name: user.name,
-          email: user.email,
-          phone: user.phone,
-          bloodGroup: profile.bloodGroup,
-          allergies: profile.allergies || [],
-          chronicDiseases: profile.chronicDiseases || [],
-          medications: profile.medications || [],
-          emergencyContacts: profile.emergencyContacts || [],
-          profileCompleted: profile.profileCompleted,
+          patientId,
+          name: 'Mock Patient',
+          age: 35,
+          gender: 'MALE',
+          bloodGroup: 'O+',
+          phone: '+91-9876543210',
+          email: 'patient@example.com',
+          allergies: ['Penicillin'],
+          chronicDiseases: ['Hypertension'],
+          emergencyContacts: [
+            {
+              name: 'John Doe',
+              relationship: 'Spouse',
+              phone: '+91-9876543211',
+            },
+          ],
         })
       );
     } catch (error) {

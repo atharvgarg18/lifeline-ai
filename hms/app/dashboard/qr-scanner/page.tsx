@@ -10,6 +10,10 @@ import { Camera, User, AlertCircle, CheckCircle, X, FlashlightOff, Flashlight, S
 export default function QRScannerPage() {
   const [patientData, setPatientData] = useState<any>(null)
   const [shouldShowScanner, setShouldShowScanner] = useState(false)
+  const [showManualInput, setShowManualInput] = useState(false)
+  const [patientIdInput, setPatientIdInput] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [admissionSuccess, setAdmissionSuccess] = useState<any>(null)
   const scannerInitializedRef = useRef(false)
   const router = useRouter()
 
@@ -71,7 +75,53 @@ export default function QRScannerPage() {
   const handleStartScanning = () => {
     resetError()
     setPatientData(null)
+    setShowManualInput(false)
     setShouldShowScanner(true)
+  }
+
+  const handleManualInput = () => {
+    resetError()
+    setPatientData(null)
+    setShouldShowScanner(false)
+    setShowManualInput(true)
+  }
+
+  const handlePatientIdSubmit = async () => {
+    if (!patientIdInput.trim()) {
+      toast.error('Please enter a Patient ID')
+      return
+    }
+
+    setLoading(true)
+    const loadingToast = toast.loading('Looking up patient...')
+
+    try {
+      const hospitalId = process.env.NEXT_PUBLIC_HOSPITAL_ID || 'HOSP-001'
+      
+      // Call backend to lookup patient by patient ID
+      const response = await hmsApi.lookupPatient(patientIdInput.trim(), hospitalId)
+
+      toast.dismiss(loadingToast)
+
+      if (response.success && response.data) {
+        setPatientData({
+          ...response.data,
+          qrCodeId: 'MANUAL-ENTRY',
+        })
+        setShowManualInput(false)
+        toast.success('✓ Patient found', {
+          duration: 3000,
+        })
+      } else {
+        toast.error('Patient not found')
+      }
+    } catch (error: any) {
+      toast.dismiss(loadingToast)
+      console.error('Patient lookup failed:', error)
+      toast.error(error.response?.data?.message || 'Patient not found')
+    } finally {
+      setLoading(false)
+    }
   }
 
   // Auto-start scanner when element is rendered
@@ -108,23 +158,30 @@ export default function QRScannerPage() {
         patientId: patientData.userId, // Use userId (actual user ID from auth)
         qrCodeId: patientData.qrCodeId,
         hospitalId: hospitalId,
-        admissionType: 'Emergency',
-        bedType: 'General',
+        admissionType: 'EMERGENCY',
+        bedType: 'GENERAL',
         symptoms: ['Emergency admission via QR scan'],
       })
 
       toast.dismiss(loadingToast)
 
       if (response.success) {
+        // Show admission success modal with bed details
+        setAdmissionSuccess({
+          admissionId: response.data.admissionId,
+          patientName: patientData.name,
+          bedId: response.data.bedId,
+          bedNumber: response.data.bedNumber || response.data.bedId.split('-').pop(),
+          ward: response.data.bedWard || 'General Ward',
+          floor: response.data.bedFloor,
+          room: response.data.bedRoom,
+          admittedAt: new Date().toLocaleString(),
+        })
+        
         toast.success('✓ Patient admitted successfully', {
           duration: 4000,
           icon: '✓',
         })
-        
-        // Navigate to admissions list
-        setTimeout(() => {
-          router.push('/dashboard/admissions')
-        }, 1500)
       } else {
         toast.error(response.message || 'Failed to admit patient')
       }
@@ -147,13 +204,22 @@ export default function QRScannerPage() {
             </p>
           </div>
           {!isScanning && !patientData && (
-            <button
-              onClick={handleStartScanning}
-              className="flex items-center justify-center space-x-2 px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors w-full sm:w-auto"
-            >
-              <Camera className="w-5 h-5" />
-              <span>Start Scanner</span>
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={handleStartScanning}
+                className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors"
+              >
+                <Camera className="w-5 h-5" />
+                <span>Scan QR Code</span>
+              </button>
+              <button
+                onClick={handleManualInput}
+                className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                <User className="w-5 h-5" />
+                <span>Enter Patient ID</span>
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -204,6 +270,53 @@ export default function QRScannerPage() {
             >
               Try Again
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Manual Patient ID Input */}
+      {showManualInput && (
+        <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">Enter Patient ID</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Patient ID
+              </label>
+              <input
+                type="text"
+                value={patientIdInput}
+                onChange={(e) => setPatientIdInput(e.target.value)}
+                placeholder="Enter Patient ID"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handlePatientIdSubmit()
+                  }
+                }}
+              />
+              <p className="mt-2 text-sm text-gray-500">
+                Enter the patient's ID from their account
+              </p>
+            </div>
+            <div className="flex space-x-3">
+              <button
+                onClick={handlePatientIdSubmit}
+                disabled={loading || !patientIdInput.trim()}
+                className="flex-1 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Looking up...' : 'Find Patient'}
+              </button>
+              <button
+                onClick={() => {
+                  setShowManualInput(false)
+                  setPatientIdInput('')
+                }}
+                className="px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -418,7 +531,7 @@ export default function QRScannerPage() {
       )}
 
       {/* Instructions */}
-      {!isScanning && !patientData && (
+      {!isScanning && !patientData && !admissionSuccess && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
           <h3 className="text-sm font-medium text-blue-900 mb-3">
             Mobile QR Scanner Instructions:
@@ -432,6 +545,95 @@ export default function QRScannerPage() {
             <li>Use flashlight button if needed in low light</li>
             <li>Switch camera button to toggle between front/rear cameras</li>
           </ol>
+        </div>
+      )}
+
+      {/* Admission Success Modal */}
+      {admissionSuccess && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+            {/* Success Header */}
+            <div className="bg-gradient-to-r from-green-500 to-green-600 p-6 text-center">
+              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-10 h-10 text-green-500" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">
+                Patient Admitted Successfully!
+              </h2>
+              <p className="text-green-50">
+                Admission has been processed
+              </p>
+            </div>
+
+            {/* Admission Details */}
+            <div className="p-6 space-y-4">
+              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-600">Patient Name</span>
+                  <span className="text-sm font-bold text-gray-900">{admissionSuccess.patientName}</span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-600">Admission ID</span>
+                  <span className="text-sm font-mono font-bold text-primary-600">{admissionSuccess.admissionId}</span>
+                </div>
+
+                <div className="border-t border-gray-200 pt-3 mt-3">
+                  <div className="bg-green-50 rounded-lg p-3 mb-3">
+                    <div className="text-center">
+                      <p className="text-xs font-medium text-green-700 mb-1">Bed Allocated</p>
+                      <p className="text-3xl font-bold text-green-600">{admissionSuccess.bedNumber}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-xs font-medium text-gray-500 uppercase">Ward</span>
+                      <p className="text-sm font-medium text-gray-900">{admissionSuccess.ward}</p>
+                    </div>
+                    {admissionSuccess.floor && (
+                      <div>
+                        <span className="text-xs font-medium text-gray-500 uppercase">Floor</span>
+                        <p className="text-sm font-medium text-gray-900">Floor {admissionSuccess.floor}</p>
+                      </div>
+                    )}
+                    {admissionSuccess.room && (
+                      <div className="col-span-2">
+                        <span className="text-xs font-medium text-gray-500 uppercase">Room</span>
+                        <p className="text-sm font-medium text-gray-900">{admissionSuccess.room}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="border-t border-gray-200 pt-3 mt-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-600">Admitted At</span>
+                    <span className="text-sm text-gray-900">{admissionSuccess.admittedAt}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                <button
+                  onClick={() => {
+                    setAdmissionSuccess(null)
+                    setPatientData(null)
+                  }}
+                  className="flex-1 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors"
+                >
+                  Scan Another Patient
+                </button>
+                <button
+                  onClick={() => router.push('/dashboard/admissions')}
+                  className="flex-1 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  View All Admissions
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

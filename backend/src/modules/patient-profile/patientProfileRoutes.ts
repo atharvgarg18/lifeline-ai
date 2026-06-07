@@ -1,33 +1,28 @@
 import { Router } from 'express';
 import { PatientProfileController } from './patientProfileController';
-import { authenticate } from '../../middleware/auth';
 
 const router = Router();
 
 /**
  * Patient Profile Routes
  * Base path: /api/v1/patient-profile
- * All routes require authentication
  */
 
-// QR Code routes (authenticated user's own QR)
+// QR Code routes
 router.post(
-  '/qr/generate',
-  authenticate,
+  '/patients/:patientId/qr/generate',
   PatientProfileController.generateQR
 );
 
 router.get(
-  '/qr/active',
-  authenticate,
+  '/patients/:patientId/qr/active',
   PatientProfileController.getActiveQR
 );
 
-// Get authenticated patient's profile
+// Patient profile routes
 router.get(
-  '/me',
-  authenticate,
-  PatientProfileController.getMyProfile
+  '/patients/:patientId',
+  PatientProfileController.getPatientProfile
 );
 
 export default router;

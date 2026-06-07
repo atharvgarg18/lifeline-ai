@@ -44,6 +44,15 @@ class HMSApi {
     return this.api.post('/hms/qr/scan', { qrData, hospitalId })
   }
 
+  // Patient Lookup APIs
+  async lookupPatient(patientId: string, hospitalId: string) {
+    return this.api.post('/hms/patients/lookup', { patientId, hospitalId })
+  }
+
+  async post(url: string, data: any) {
+    return this.api.post(url, data)
+  }
+
   // Admission APIs
   async quickAdmit(data: {
     patientId: string

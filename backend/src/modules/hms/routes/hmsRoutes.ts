@@ -10,8 +10,14 @@ const router = Router();
  * Base path: /api/v1/hms
  */
 
+// Patient Lookup
+router.post('/patients/lookup', HMSController.lookupPatient);
+
 // QR Code Scanning
 router.post('/qr/scan', HMSController.scanQRCode);
+
+// Patient Lookup
+router.post('/patients/lookup', HMSController.lookupPatient);
 
 // Admissions
 router.post('/admission/quick-admit', HMSController.quickAdmit);
