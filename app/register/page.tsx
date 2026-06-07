@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { motion } from 'framer-motion';
-import { Activity, Mail, Lock, Eye, EyeOff, User, Phone, AlertCircle } from 'lucide-react';
+import { Activity, Mail, Lock, Eye, EyeOff, User, Phone, AlertCircle, Calendar, Users, Droplet } from 'lucide-react';
 import Link from 'next/link';
 
 const ROLES = [
@@ -13,10 +13,22 @@ const ROLES = [
   { value: 'HOSPITAL_ADMIN', label: 'Hospital Admin' },
 ];
 
+const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+const GENDERS = ['MALE', 'FEMALE', 'OTHER'];
+
 export default function RegisterPage() {
   const { register } = useAuth();
   const router = useRouter();
-  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', role: 'PATIENT' });
+  const [form, setForm] = useState({ 
+    name: '', 
+    email: '', 
+    phone: '', 
+    password: '', 
+    role: 'PATIENT',
+    age: '',
+    gender: '',
+    bloodGroup: ''
+  });
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -109,6 +121,51 @@ export default function RegisterPage() {
                   style={inputStyle}
                   onFocus={e => e.currentTarget.style.borderColor = '#60a5fa'}
                   onBlur={e => e.currentTarget.style.borderColor = '#e2e8f0'} />
+              </div>
+            </div>
+
+            {/* Age */}
+            <div>
+              <label className="block text-slate-500 text-xs font-semibold uppercase tracking-wider mb-2">Age</label>
+              <div className="relative">
+                <Calendar size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input type="number" required min="1" max="150" value={form.age} onChange={set('age')} placeholder="25"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl text-slate-900 placeholder-slate-400 text-sm outline-none transition-all"
+                  style={inputStyle}
+                  onFocus={e => e.currentTarget.style.borderColor = '#60a5fa'}
+                  onBlur={e => e.currentTarget.style.borderColor = '#e2e8f0'} />
+              </div>
+            </div>
+
+            {/* Gender */}
+            <div>
+              <label className="block text-slate-500 text-xs font-semibold uppercase tracking-wider mb-2">Gender</label>
+              <div className="relative">
+                <Users size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <select required value={form.gender} onChange={set('gender')}
+                  className="w-full pl-11 pr-4 py-3 rounded-xl text-slate-900 text-sm outline-none transition-all appearance-none"
+                  style={inputStyle}
+                  onFocus={e => e.currentTarget.style.borderColor = '#60a5fa'}
+                  onBlur={e => e.currentTarget.style.borderColor = '#e2e8f0'}>
+                  <option value="">Select Gender</option>
+                  {GENDERS.map(g => <option key={g} value={g}>{g.charAt(0) + g.slice(1).toLowerCase()}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {/* Blood Group */}
+            <div>
+              <label className="block text-slate-500 text-xs font-semibold uppercase tracking-wider mb-2">Blood Group</label>
+              <div className="relative">
+                <Droplet size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <select required value={form.bloodGroup} onChange={set('bloodGroup')}
+                  className="w-full pl-11 pr-4 py-3 rounded-xl text-slate-900 text-sm outline-none transition-all appearance-none"
+                  style={inputStyle}
+                  onFocus={e => e.currentTarget.style.borderColor = '#60a5fa'}
+                  onBlur={e => e.currentTarget.style.borderColor = '#e2e8f0'}>
+                  <option value="">Select Blood Group</option>
+                  {BLOOD_GROUPS.map(bg => <option key={bg} value={bg}>{bg}</option>)}
+                </select>
               </div>
             </div>
 

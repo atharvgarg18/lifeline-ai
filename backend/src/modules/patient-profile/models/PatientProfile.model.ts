@@ -9,6 +9,8 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 export interface IPatientProfile extends Document {
   userId: mongoose.Types.ObjectId;
   healthIdNumber: string;
+  age?: number;
+  gender?: 'MALE' | 'FEMALE' | 'OTHER';
   bloodGroup: 'O+' | 'O-' | 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'UNKNOWN';
   allergies: string[];
   chronicDiseases: string[];
@@ -128,6 +130,15 @@ const PatientProfileSchema = new Schema<IPatientProfile>(
       type: String,
       unique: true,
       sparse: true,
+    },
+    age: {
+      type: Number,
+      min: 0,
+      max: 150,
+    },
+    gender: {
+      type: String,
+      enum: ['MALE', 'FEMALE', 'OTHER'],
     },
     bloodGroup: {
       type: String,

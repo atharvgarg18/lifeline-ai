@@ -16,6 +16,7 @@
     "format:check": "prettier --check 'src/**/*.ts'",
     "db:migrate": "ts-node src/migrations/run.ts",
     "db:seed": "ts-node src/database/seeds/index.ts",
+    "db:seed:hospitals": "ts-node -r tsconfig-paths/register src/scripts/seedHospitals.ts",
     "db:reset": "ts-node src/database/reset.ts",
     "pre-commit": "lint-staged"
   },
@@ -29,6 +30,7 @@
   "author": "LifeLine AI Team",
   "license": "ISC",
   "dependencies": {
+    "@types/socket.io": "^3.0.1",
     "axios": "^1.5.0",
     "bcrypt": "^5.1.1",
     "bull": "^4.11.4",
@@ -39,7 +41,10 @@
     "express-rate-limit": "^7.0.0",
     "geolocation-utils": "^1.2.1",
     "google-map-react": "^2.2.1",
+<<<<<<< HEAD
     "googleapis": "^173.0.0",
+=======
+>>>>>>> 4486a0a28cfbc695a2ab15393beb31d587bbb954
     "helmet": "^7.0.0",
     "joi": "^17.11.0",
     "jsonwebtoken": "^9.0.2",
@@ -47,7 +52,11 @@
     "mongoose": "^7.5.0",
     "qrcode": "^1.5.3",
     "redis": "^4.6.10",
+<<<<<<< HEAD
     "socket.io": "^4.7.2",
+=======
+    "socket.io": "^4.8.3",
+>>>>>>> 4486a0a28cfbc695a2ab15393beb31d587bbb954
     "uuid": "^9.0.1",
     "winston": "^3.10.0"
   },

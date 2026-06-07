@@ -10,6 +10,9 @@ interface RegisterPayload {
   phone: string;
   password: string;
   role?: IUser['role'];
+  age?: number;
+  gender?: 'MALE' | 'FEMALE' | 'OTHER';
+  bloodGroup?: 'O+' | 'O-' | 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-';
 }
 
 interface LoginPayload {
@@ -75,6 +78,9 @@ export class AuthService {
     let healthIdNumber: string | undefined;
     if ((payload.role || 'PATIENT') === 'PATIENT') {
       const profile = await patientProfileRepository.create(user._id, {
+        age: payload.age,
+        gender: payload.gender,
+        bloodGroup: payload.bloodGroup,
         allergies: [],
         chronicDiseases: [],
         medications: [],

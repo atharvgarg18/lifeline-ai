@@ -45,6 +45,38 @@ export class EmergencySosController {
   }
 
   /**
+   * Get active emergency for current user
+   * GET /api/v1/emergency/active
+   */
+  public async getActiveEmergency(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.user?.id;
+
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          error: {
+            code: 'UNAUTHORIZED',
+            message: 'User not authenticated',
+            statusCode: 401,
+          },
+        });
+        return;
+      }
+
+      // Get recent emergency for this user (within last 24 hours)
+      const emergency = await emergencySosService.getActiveEmergency(userId);
+
+      res.status(200).json({
+        success: true,
+        data: emergency,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * Get emergency details
    * GET /api/v1/emergency/:emergencyId
    */

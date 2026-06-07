@@ -8,7 +8,11 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { createServer } from 'http';
+<<<<<<< HEAD
 import healthRoutes from './modules/health/health.routes';
+=======
+import { Server as SocketIOServer } from 'socket.io';
+>>>>>>> 4486a0a28cfbc695a2ab15393beb31d587bbb954
 
 // Config
 import { ENV } from './config/env';
@@ -20,9 +24,10 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 
 // Module Routes
 import { emergencySosRoutes } from './modules/emergency-sos/emergencySosRoutes';
-import { patientProfileRoutes } from './modules/patient-profile/patientProfileRoutes';
+import patientProfileRoutes from './modules/patient-profile/patientProfileRoutes';
 import { appointmentRoutes } from './modules/appointments/appointmentRoutes';
 import { authRoutes } from './modules/auth/authRoutes';
+import hmsRoutes from './modules/hms/routes/hmsRoutes';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // App Setup
@@ -30,6 +35,58 @@ import { authRoutes } from './modules/auth/authRoutes';
 
 const app = express();
 const httpServer = createServer(app);
+
+// ── Socket.io Setup ───────────────────────────────────────────────
+const io = new SocketIOServer(httpServer, {
+  cors: {
+    origin: [
+      ENV.FRONTEND_URL,
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:3002', // HMS App
+    ],
+    credentials: true,
+    methods: ['GET', 'POST'],
+  },
+  transports: ['websocket', 'polling'],
+});
+
+// Store Socket.io instance globally for services to use
+(global as any).io = io;
+
+// Socket.io connection handling
+io.on('connection', (socket) => {
+  console.log('🔌 Client connected:', socket.id);
+
+  // Hospital joins their room
+  socket.on('hospital:join', (hospitalId: string) => {
+    socket.join(`hospital:${hospitalId}`);
+    console.log(`🏥 Hospital ${hospitalId} joined room`);
+    socket.emit('hospital:joined', { hospitalId, success: true });
+  });
+
+  // Hospital leaves their room
+  socket.on('hospital:leave', (hospitalId: string) => {
+    socket.leave(`hospital:${hospitalId}`);
+    console.log(`🏥 Hospital ${hospitalId} left room`);
+  });
+
+  // Patient joins emergency room (for status updates)
+  socket.on('emergency:join', (emergencyId: string) => {
+    socket.join(`emergency:${emergencyId}`);
+    console.log(`🚨 Patient joined emergency room: ${emergencyId}`);
+  });
+
+  // Disconnect
+  socket.on('disconnect', () => {
+    console.log('❌ Client disconnected:', socket.id);
+  });
+});
+
+console.log('✅ Socket.io initialized');
+
+// ── Trust Proxy (for Render/production behind load balancer) ─────
+app.set('trust proxy', 1);
 
 // ── Security ──────────────────────────────────────────────────────
 app.use(helmet({
@@ -40,6 +97,7 @@ const allowedOrigins = new Set([
   ENV.FRONTEND_URL,
   'http://localhost:3000',
   'http://localhost:3001',
+  'http://localhost:3002', // HMS App
 ]);
 
 app.use(cors({
@@ -105,16 +163,33 @@ app.get('/api/v1/health', (_req, res) => {
 // ── Module Routes ─────────────────────────────────────────────────
 const API_BASE = '/api/v1';
 
+// Debug: Log all registered routes
+console.log('📝 Registering API routes...');
+
 // Auth (public — no authenticate middleware)
 app.use(`${API_BASE}/auth`, authRoutes);
+console.log('  ✓ Auth routes mounted at', `${API_BASE}/auth`);
 
 // Critical endpoint: extra rate limiting
 app.use(`${API_BASE}/emergency/sos/trigger`, criticalLimiter);
 
 app.use(`${API_BASE}/emergency`, emergencySosRoutes);
+console.log('  ✓ Emergency routes mounted at', `${API_BASE}/emergency`);
+
 app.use(`${API_BASE}/patient`, patientProfileRoutes);
+app.use(`${API_BASE}/patient-profile`, patientProfileRoutes);
+console.log('  ✓ Patient routes mounted at', `${API_BASE}/patient`);
+
 app.use(`${API_BASE}/appointments`, appointmentRoutes);
+<<<<<<< HEAD
 app.use(`${API_BASE}/health`, healthRoutes);
+=======
+console.log('  ✓ Appointment routes mounted at', `${API_BASE}/appointments`);
+
+app.use(`${API_BASE}/hms`, hmsRoutes);
+console.log('  ✓ HMS routes mounted at', `${API_BASE}/hms`);
+console.log('✅ All routes registered\n');
+>>>>>>> 4486a0a28cfbc695a2ab15393beb31d587bbb954
 
 // ── Dashboard Stats (public for dev) ──────────────────────────────
 import mongoose from 'mongoose';
@@ -208,4 +283,4 @@ const bootstrap = async () => {
 
 bootstrap();
 
-export { app, httpServer };
+export { app, httpServer, io };

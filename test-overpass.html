@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Overpass API</title>
+</head>
+<body>
+    <h1>Testing Overpass API for Hospitals</h1>
+    <button onclick="testQuery()">Test Query</button>
+    <div id="results"></div>
+
+    <script>
+        async function testQuery() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Loading...</p>';
+
+            // Bhopal coordinates
+            const lat = 23.250526;
+            const lon = 77.424216;
+            const radius = 10000; // 10km
+
+            const query = `
+[out:json][timeout:25];
+(
+  node["amenity"="hospital"](around:${radius},${lat},${lon});
+  way["amenity"="hospital"](around:${radius},${lat},${lon});
+);
+out center;
+            `.trim();
+
+            console.log('Query:', query);
+
+            try {
+                const response = await fetch('https://overpass-api.de/api/interpreter', {
+                    method: 'POST',
+                    body: query,
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                });
+
+                const data = await response.json();
+                console.log('Response:', data);
+
+                if (data.elements && data.elements.length > 0) {
+                    let html = `<h2>✅ Found ${data.elements.length} hospitals!</h2><ul>`;
+                    
+                    data.elements.forEach(element => {
+                        if (element.tags && element.tags.name) {
+                            const lat = element.lat || element.center?.lat || 'N/A';
+                            const lon = element.lon || element.center?.lon || 'N/A';
+                            html += `<li><strong>${element.tags.name}</strong> (${lat}, ${lon})</li>`;
+                        }
+                    });
+                    
+                    html += '</ul>';
+                    resultsDiv.innerHTML = html;
+                } else {
+                    resultsDiv.innerHTML = '<p>❌ No hospitals found</p><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                resultsDiv.innerHTML = '<p>❌ Error: ' + error.message + '</p>';
+            }
+        }
+    </script>
+</body>
+</html>
