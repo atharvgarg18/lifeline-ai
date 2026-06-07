@@ -24,6 +24,7 @@ import patientProfileRoutes from './modules/patient-profile/patientProfileRoutes
 import { appointmentRoutes } from './modules/appointments/appointmentRoutes';
 import { authRoutes } from './modules/auth/authRoutes';
 import hmsRoutes from './modules/hms/routes/hmsRoutes';
+import consultationRoutes from './modules/consultations/consultationRoutes';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // App Setup
@@ -71,6 +72,59 @@ io.on('connection', (socket) => {
   socket.on('emergency:join', (emergencyId: string) => {
     socket.join(`emergency:${emergencyId}`);
     console.log(`🚨 Patient joined emergency room: ${emergencyId}`);
+  });
+
+  // ──────────────────────────────────────────────────────────
+  // Consultation Socket Events
+  // ──────────────────────────────────────────────────────────
+  
+  // Join consultation room
+  socket.on('consultation:join', (data: { roomId: string; userId: string; userName: string; userRole: string }) => {
+    socket.join(data.roomId);
+    console.log(`💬 ${data.userName} (${data.userRole}) joined consultation room: ${data.roomId}`);
+    
+    // Notify others in the room
+    socket.to(data.roomId).emit('consultation:user-joined', {
+      userId: data.userId,
+      userName: data.userName,
+      userRole: data.userRole,
+    });
+    
+    socket.emit('consultation:joined', { roomId: data.roomId, success: true });
+  });
+
+  // Leave consultation room
+  socket.on('consultation:leave', (data: { roomId: string; userId: string; userName: string }) => {
+    socket.leave(data.roomId);
+    console.log(`💬 ${data.userName} left consultation room: ${data.roomId}`);
+    
+    socket.to(data.roomId).emit('consultation:user-left', {
+      userId: data.userId,
+      userName: data.userName,
+    });
+  });
+
+  // Send message in consultation
+  socket.on('consultation:message', (data: { roomId: string; message: any }) => {
+    console.log(`💬 Message in room ${data.roomId}:`, data.message);
+    socket.to(data.roomId).emit('consultation:message', data.message);
+  });
+
+  // Typing indicator
+  socket.on('consultation:typing', (data: { roomId: string; userName: string; isTyping: boolean }) => {
+    socket.to(data.roomId).emit('consultation:typing', {
+      userName: data.userName,
+      isTyping: data.isTyping,
+    });
+  });
+
+  // Share PeerJS ID for video calls
+  socket.on('video:peer-id', (data: { roomId: string; peerId: string; userRole: string }) => {
+    console.log(`🎥 PeerJS ID shared in room ${data.roomId}: ${data.peerId} (${data.userRole})`);
+    socket.to(data.roomId).emit('video:peer-id', {
+      peerId: data.peerId,
+      userRole: data.userRole,
+    });
   });
 
   // Disconnect
@@ -184,6 +238,9 @@ console.log('  ✓ Health routes mounted at', `${API_BASE}/health`);
 
 app.use(`${API_BASE}/hms`, hmsRoutes);
 console.log('  ✓ HMS routes mounted at', `${API_BASE}/hms`);
+
+app.use(`${API_BASE}/consultations`, consultationRoutes);
+console.log('  ✓ Consultation routes mounted at', `${API_BASE}/consultations`);
 
 console.log('✅ All routes registered\n');
 

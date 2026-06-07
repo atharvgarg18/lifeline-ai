@@ -40,6 +40,23 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
 
     const token = authHeader.substring(7); // Remove "Bearer "
 
+    // TEMPORARY HMS BYPASS: Remove when HMS implements proper authentication
+    // This allows HMS to work without JWT by using a special token
+    // Set ALLOW_HMS_BYPASS=true in .env to enable (for development/deployment)
+    const allowHMSBypass = process.env.ALLOW_HMS_BYPASS === 'true' || ENV.IS_DEV;
+    
+    if (allowHMSBypass && token === 'hms_temp_token') {
+      req.user = {
+        id: 'HMS-TEMP-USER',
+        email: 'hms@hospital.com',
+        role: 'DOCTOR',
+        iat: Date.now(),
+        exp: Date.now() + 86400000,
+      };
+      next();
+      return;
+    }
+
     const decoded = jwt.verify(token, ENV.JWT_SECRET) as JwtPayload;
     req.user = decoded;
 

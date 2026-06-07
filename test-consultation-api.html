@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Consultation API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border-left: 4px solid #0ea5e9;
+        }
+        button {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #0284c7;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .success {
+            border-left: 4px solid #22c55e;
+            background: #f0fdf4;
+        }
+        .error {
+            border-left: 4px solid #ef4444;
+            background: #fef2f2;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        label {
+            font-weight: bold;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Consultation API Tester</h1>
+        
+        <!-- Test 1: Health Check -->
+        <div class="test-section">
+            <h3>Test 1: Backend Health Check</h3>
+            <p>Check if backend is running</p>
+            <button onclick="testHealth()">Test Health Endpoint</button>
+            <div id="health-result" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- Test 2: Get Token -->
+        <div class="test-section">
+            <h3>Test 2: Check Patient Token</h3>
+            <p>Verify patient is logged in</p>
+            <button onclick="checkToken()">Check Token</button>
+            <div id="token-result" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- Test 3: Create Consultation -->
+        <div class="test-section">
+            <h3>Test 3: Create Consultation</h3>
+            <p>Test creating a consultation</p>
+            
+            <label>Token (from Test 2):</label>
+            <input type="text" id="token-input" placeholder="Paste your ll_token here">
+            
+            <label>Patient ID:</label>
+            <input type="text" id="patient-id" value="TEST-123">
+            
+            <label>Patient Name:</label>
+            <input type="text" id="patient-name" value="Test Patient">
+            
+            <label>Type:</label>
+            <select id="consult-type" style="width: 100%; padding: 10px; margin: 10px 0;">
+                <option value="VIDEO">VIDEO</option>
+                <option value="CHAT">CHAT</option>
+            </select>
+            
+            <button onclick="testCreateConsultation()">Create Consultation</button>
+            <div id="create-result" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api/v1';
+
+        // Test 1: Health Check
+        async function testHealth() {
+            const resultDiv = document.getElementById('health-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.textContent = 'Testing...';
+
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ SUCCESS!\n\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ FAILED!\n\nStatus: ${response.status}\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ ERROR!\n\nBackend might not be running.\n\n${error.message}\n\nMake sure to run: cd backend && npm run dev`;
+            }
+        }
+
+        // Test 2: Check Token
+        function checkToken() {
+            const resultDiv = document.getElementById('token-result');
+            resultDiv.style.display = 'block';
+
+            const token = localStorage.getItem('ll_token');
+            const user = localStorage.getItem('ll_user');
+
+            if (token && user) {
+                try {
+                    const userData = JSON.parse(user);
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Token Found!\n\nToken: ${token.substring(0, 50)}...\n\nUser Data:\n${JSON.stringify(userData, null, 2)}`;
+                    
+                    // Auto-fill the token input
+                    document.getElementById('token-input').value = token;
+                    document.getElementById('patient-id').value = userData.id || 'TEST-123';
+                    document.getElementById('patient-name').value = userData.name || 'Test Patient';
+                } catch (e) {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Error parsing user data!\n\n${e.message}`;
+                }
+            } else {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ No Token Found!\n\nll_token: ${token ? 'Found' : 'Missing'}\nll_user: ${user ? 'Found' : 'Missing'}\n\nPlease log in at: http://localhost:3001/login`;
+            }
+        }
+
+        // Test 3: Create Consultation
+        async function testCreateConsultation() {
+            const resultDiv = document.getElementById('create-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.textContent = 'Creating consultation...';
+
+            const token = document.getElementById('token-input').value;
+            const patientId = document.getElementById('patient-id').value;
+            const patientName = document.getElementById('patient-name').value;
+            const type = document.getElementById('consult-type').value;
+
+            if (!token) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ Please paste your token first!\n\nRun Test 2 to get your token.';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/consultations/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        patientId,
+                        patientName,
+                        hospitalId: 'HOSP-001',
+                        type
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ SUCCESS!\n\nConsultation Created:\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ FAILED!\n\nStatus: ${response.status}\nResponse:\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ ERROR!\n\n${error.message}\n\nPossible causes:\n- Backend not running\n- Wrong API URL\n- Network issue`;
+            }
+        }
+    </script>
+</body>
+</html>

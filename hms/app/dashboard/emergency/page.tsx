@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useEmergencyStore } from '@/store/emergencyStore'
 import { hmsApi } from '@/services/hmsApi'
 import { formatDistanceToNow } from 'date-fns'
-import { Clock, MapPin, AlertCircle, Activity, Check, X } from 'lucide-react'
+import { Clock, MapPin, AlertCircle, Activity, Check, X, RefreshCw } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function EmergencyPage() {
@@ -18,14 +18,35 @@ export default function EmergencyPage() {
 
   useEffect(() => {
     loadPendingEmergencies()
+    
+    // Auto-refresh every 10 seconds
+    const interval = setInterval(() => {
+      loadPendingEmergencies()
+    }, 10000)
+    
+    return () => clearInterval(interval)
   }, [])
 
   const loadPendingEmergencies = async () => {
     try {
       const hospitalId = process.env.NEXT_PUBLIC_HOSPITAL_ID || 'HOSP-001'
-      await hmsApi.getPendingEmergencies(hospitalId)
+      const response = await hmsApi.getPendingEmergencies(hospitalId)
+      
+      // Populate the store with the fetched emergencies
+      if (response.success && response.data.requests) {
+        // Clear existing requests first
+        useEmergencyStore.getState().clearRequests()
+        
+        // Add all fetched requests to the store
+        response.data.requests.forEach((request: any) => {
+          useEmergencyStore.getState().addRequest(request)
+        })
+        
+        console.log('Loaded', response.data.requests.length, 'emergency requests')
+      }
     } catch (error) {
       console.error('Failed to load emergencies:', error)
+      toast.error('Failed to load emergency requests')
     }
   }
 
@@ -124,13 +145,24 @@ export default function EmergencyPage() {
         <div className="lg:col-span-1">
           <div className="bg-white rounded-lg shadow border border-gray-200">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Pending Emergencies
-              </h3>
-              <p className="text-sm text-gray-600 mt-1">
-                {pendingRequests.length} request
-                {pendingRequests.length !== 1 ? 's' : ''} waiting
-              </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Pending Emergencies
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {pendingRequests.length} request
+                    {pendingRequests.length !== 1 ? 's' : ''} waiting
+                  </p>
+                </div>
+                <button
+                  onClick={loadPendingEmergencies}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  title="Refresh"
+                >
+                  <RefreshCw className="w-5 h-5 text-gray-600" />
+                </button>
+              </div>
             </div>
 
             <div className="divide-y divide-gray-200 max-h-[600px] overflow-y-auto">

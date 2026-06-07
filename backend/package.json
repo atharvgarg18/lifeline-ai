@@ -31,6 +31,7 @@
   "license": "ISC",
   "dependencies": {
     "@types/socket.io": "^3.0.1",
+    "@types/uuid": "^10.0.0",
     "axios": "^1.5.0",
     "bcrypt": "^5.1.1",
     "bull": "^4.11.4",

@@ -4,7 +4,7 @@ import LifelineMedicalSections from "@/components/emergency/MedicalStatusSection
 import LifelineDashboardSections from "@/components/emergency/EmergencyResponseSections";
 import { HealthAnalytics } from "@/components/emergency/HealthAnalytics";
 
-export default function Page() {
+export default function EmergencyPage() {
   return (
     <>
       <SOSQuickRequest />

@@ -67,6 +67,9 @@ export const ENV = {
   // Feature flags
   IS_DEV: optional('NODE_ENV', 'development') === 'development',
   IS_PROD: optional('NODE_ENV', 'development') === 'production',
+  
+  // HMS temporary bypass (remove when HMS implements proper auth)
+  ALLOW_HMS_BYPASS: optional('ALLOW_HMS_BYPASS', 'true') === 'true',
 } as const;
 
 export type EnvConfig = typeof ENV;
