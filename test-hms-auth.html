@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test HMS Authentication</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔐 Test HMS Authentication Bypass</h1>
+    
+    <div>
+        <label>Backend URL:</label>
+        <input type="text" id="backendUrl" placeholder="https://your-backend.onrender.com" />
+    </div>
+
+    <button onclick="testHMSBypass()">Test HMS Temp Token</button>
+    <button onclick="testWithoutToken()">Test Without Token</button>
+    <button onclick="checkEnvVar()">Check Backend Env Var</button>
+
+    <div id="results"></div>
+
+    <script>
+        async function testHMSBypass() {
+            const backendUrl = document.getElementById('backendUrl').value;
+            if (!backendUrl) {
+                alert('Please enter backend URL');
+                return;
+            }
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="test">Testing HMS bypass...</div>';
+
+            try {
+                const response = await fetch(`${backendUrl}/api/v1/consultations/hospital/HOSP-001/waiting`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer hms_temp_token',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.status === 401) {
+                    resultsDiv.innerHTML = `
+                        <div class="test error">
+                            <h3>❌ HMS Bypass NOT Working</h3>
+                            <p><strong>Status:</strong> 401 Unauthorized</p>
+                            <p><strong>Message:</strong> ${data.message || 'Token not accepted'}</p>
+                            <p><strong>Problem:</strong> ALLOW_HMS_BYPASS is likely FALSE or not set</p>
+                            <h4>Fix:</h4>
+                            <ol>
+                                <li>Go to your backend deployment (Render/Railway/Heroku)</li>
+                                <li>Add environment variable: <code>ALLOW_HMS_BYPASS=true</code></li>
+                                <li>Restart the backend service</li>
+                                <li>Test again</li>
+                            </ol>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else if (response.ok) {
+                    resultsDiv.innerHTML = `
+                        <div class="test success">
+                            <h3>✅ HMS Bypass Working!</h3>
+                            <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                            <p><strong>Message:</strong> hms_temp_token accepted</p>
+                            <p>Consultations found: ${data.data?.consultations?.length || 0}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="test error">
+                            <h3>⚠️ Unexpected Response</h3>
+                            <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="test error">
+                        <h3>❌ Network Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p>Check if backend URL is correct and backend is running.</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testWithoutToken() {
+            const backendUrl = document.getElementById('backendUrl').value;
+            if (!backendUrl) {
+                alert('Please enter backend URL');
+                return;
+            }
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="test">Testing without token...</div>';
+
+            try {
+                const response = await fetch(`${backendUrl}/api/v1/consultations/hospital/HOSP-001/waiting`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                resultsDiv.innerHTML = `
+                    <div class="test ${response.status === 401 ? 'success' : 'error'}">
+                        <h3>${response.status === 401 ? '✅' : '⚠️'} Without Token</h3>
+                        <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                        <p>Should return 401 (auth required) - ${response.status === 401 ? 'CORRECT' : 'UNEXPECTED'}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="test error">
+                        <h3>❌ Network Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function checkEnvVar() {
+            const backendUrl = document.getElementById('backendUrl').value;
+            if (!backendUrl) {
+                alert('Please enter backend URL');
+                return;
+            }
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="test">Checking backend health...</div>';
+
+            try {
+                const response = await fetch(`${backendUrl}/api/v1/health`);
+                const data = await response.json();
+
+                let message = '';
+                if (response.ok) {
+                    message = `
+                        <div class="test success">
+                            <h3>✅ Backend is Running</h3>
+                            <p><strong>Status:</strong> ${data.data?.status || 'healthy'}</p>
+                            <p>Backend is reachable. Now test HMS bypass above.</p>
+                            <h4>Next Steps:</h4>
+                            <ol>
+                                <li>Click "Test HMS Temp Token" button</li>
+                                <li>If it fails with 401, ALLOW_HMS_BYPASS is not set</li>
+                                <li>Go to your backend deployment settings</li>
+                                <li>Add: ALLOW_HMS_BYPASS=true</li>
+                                <li>Restart backend</li>
+                            </ol>
+                        </div>
+                    `;
+                } else {
+                    message = `
+                        <div class="test error">
+                            <h3>❌ Backend Health Check Failed</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p>Backend might not be running or URL is incorrect.</p>
+                        </div>
+                    `;
+                }
+                resultsDiv.innerHTML = message;
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="test error">
+                        <h3>❌ Cannot Reach Backend</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p>Possible issues:</p>
+                        <ul>
+                            <li>Backend is not deployed/running</li>
+                            <li>Backend URL is incorrect</li>
+                            <li>CORS not configured</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+    </script>
+
+    <div style="margin-top: 40px; padding: 20px; background-color: #f8f9fa; border-radius: 5px;">
+        <h3>📋 How to Fix HMS Authentication</h3>
+        <h4>Step 1: Set Backend Environment Variable</h4>
+        <p>Go to your backend deployment platform:</p>
+        <ul>
+            <li><strong>Render:</strong> Dashboard → Service → Environment → Add <code>ALLOW_HMS_BYPASS=true</code></li>
+            <li><strong>Railway:</strong> Project → Variables → Add <code>ALLOW_HMS_BYPASS=true</code></li>
+            <li><strong>Heroku:</strong> App → Settings → Config Vars → Add <code>ALLOW_HMS_BYPASS=true</code></li>
+        </ul>
+
+        <h4>Step 2: Restart Backend</h4>
+        <p>After adding the variable, restart your backend service.</p>
+
+        <h4>Step 3: Test</h4>
+        <p>Use this page to test if HMS bypass is working.</p>
+
+        <h4>Why This is Needed</h4>
+        <p>HMS doesn't have a login system yet, so we use a temporary token bypass. The backend needs <code>ALLOW_HMS_BYPASS=true</code> to accept <code>hms_temp_token</code>.</p>
+    </div>
+</body>
+</html>
