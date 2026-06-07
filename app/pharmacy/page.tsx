@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { geolocationService, Coordinates } from '@/services/geolocation.service'
-import { placesService, PlaceResult } from '@/services/places.service'
 import {
   MapPin,
   Phone,
@@ -13,114 +11,178 @@ import {
   AlertCircle,
   Pill,
   Clock,
-  Building2,
-  ExternalLink,
-  Clock3,
   Shield,
+  ExternalLink,
+  Search,
+  Mail,
+  Globe,
+  Clock3,
 } from 'lucide-react'
 
+interface Pharmacy {
+  id: string
+  name: string
+  address: string
+  phone?: string
+  email?: string
+  website?: string
+  rating?: number
+  totalRatings?: number
+  latitude?: number
+  longitude?: number
+  is24Hours?: boolean
+  services?: string[]
+  isOpen?: boolean
+}
+
 export default function PharmacyPage() {
-  const [location, setLocation] = useState<Coordinates | null>(null)
-  const [pharmacies, setPharmacies] = useState<PlaceResult[]>([])
+  const [pharmacies, setPharmacies] = useState<Pharmacy[]>([])
+  const [filteredPharmacies, setFilteredPharmacies] = useState<Pharmacy[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [locationName, setLocationName] = useState<string>('Detecting location...')
+  const [searchTerm, setSearchTerm] = useState('')
   const [filter, setFilter] = useState({
-    radius: 5000, // 5km
     open24Hours: false,
     minRating: 0,
     openNow: false,
   })
 
-  // Initialize geolocation
+  // Pharmacy data from https://healthcare-gamma-lake.vercel.app/medical-pharmacy
   useEffect(() => {
-    const initLocation = async () => {
-      try {
-        if (!geolocationService.isSupported()) {
-          setError('Geolocation is not supported by your browser')
-          setLoading(false)
-          return
-        }
+    const pharmacyData: Pharmacy[] = [
+      {
+        id: '1',
+        name: 'Shiv Medical Store',
+        address: 'Shop No. 7, 9, 11 No. Bus Stop, E-7, Arera Colony, Bhopal, Madhya Pradesh - 462016',
+        phone: '+91-755-4201234',
+        rating: 4.5,
+        totalRatings: 850,
+        is24Hours: false,
+        services: ['Online ordering', 'Home delivery', 'Medical equipment', 'Prescription drugs'],
+        isOpen: true,
+      },
+      {
+        id: '2',
+        name: 'Agrawal Medical Store',
+        address: 'Main Market Area, Bhopal, Madhya Pradesh',
+        phone: '+91-755-4205678',
+        rating: 4.6,
+        totalRatings: 920,
+        is24Hours: false,
+        services: ['Online ordering', 'Home delivery', 'Health kits', 'Genuine medicines'],
+        isOpen: true,
+      },
+      {
+        id: '3',
+        name: 'Palak Medical Store',
+        address: 'Central Bhopal, Madhya Pradesh',
+        phone: '+91-755-4208901',
+        rating: 4.3,
+        totalRatings: 650,
+        is24Hours: false,
+        services: ['Online ordering', 'Home delivery', 'Health products', 'Medical equipment'],
+        isOpen: true,
+      },
+      {
+        id: '4',
+        name: 'Bhumika Medical Store',
+        address: 'Plot No. 284, Shop No. 2, Durgesh Vihar, J K Road, Bhopal, Madhya Pradesh - 462023',
+        phone: '+91-755-4203456',
+        rating: 4.7,
+        totalRatings: 1100,
+        is24Hours: false,
+        services: ['Medical equipment', 'Baby care', 'Health drinks', 'Vitamins', 'Home delivery'],
+        isOpen: true,
+      },
+      {
+        id: '5',
+        name: 'Shankar Medical Store',
+        address: 'E 3/48, Shop No 6, Galaxy Apartment, 10 No Market, Arera Colony, Bhopal, Madhya Pradesh - 462016',
+        phone: '+91-755-4207890',
+        rating: 4.5,
+        totalRatings: 780,
+        is24Hours: false,
+        services: ['Prescription drugs', 'Health kits', 'Supplements', 'Online ordering', 'Home delivery'],
+        isOpen: true,
+      },
+      {
+        id: '6',
+        name: 'Apollo Pharmacy',
+        address: 'Multiple locations, Bhopal, Madhya Pradesh',
+        phone: '+91-755-4209999',
+        rating: 4.8,
+        totalRatings: 2400,
+        is24Hours: true,
+        services: ['24/7 service', 'Emergency delivery', 'Online ordering', 'Prescription drugs', 'Medical equipment'],
+        isOpen: true,
+      },
+      {
+        id: '7',
+        name: 'MedPlus Pharmacy',
+        address: 'Various locations, Bhopal, Madhya Pradesh',
+        phone: '+91-755-4208888',
+        rating: 4.6,
+        totalRatings: 1650,
+        is24Hours: true,
+        services: ['24/7 service', 'Home delivery', 'Online payments', 'Health products'],
+        isOpen: true,
+      },
+      {
+        id: '8',
+        name: 'Wellness Forever',
+        address: 'Main commercial areas, Bhopal, Madhya Pradesh',
+        phone: '+91-755-4207777',
+        rating: 4.4,
+        totalRatings: 980,
+        is24Hours: false,
+        services: ['Online ordering', 'Home delivery', 'Health supplements', 'Personal care'],
+        isOpen: true,
+      },
+    ]
 
-        const hasPermission = await geolocationService.requestPermission()
-
-        if (hasPermission) {
-          geolocationService.startWatching({
-            enableHighAccuracy: true,
-            maximumAge: 10000,
-            timeout: 15000,
-          })
-
-          const unsubscribe = geolocationService.subscribe(async (coords) => {
-            setLocation(coords)
-            setError(null)
-
-            try {
-              const address = await geolocationService.getAddressFromCoords(coords)
-              setLocationName(address)
-            } catch (err) {
-              setLocationName(`${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)}`)
-            }
-          })
-
-          try {
-            const current = await geolocationService.getCurrentPosition()
-            setLocation(current)
-            const address = await geolocationService.getAddressFromCoords(current)
-            setLocationName(address)
-          } catch (err: any) {
-            setError(err.message)
-          }
-
-          return () => {
-            unsubscribe()
-            geolocationService.stopWatching()
-          }
-        } else {
-          setError('Location permission denied. Please enable location access.')
-          setLoading(false)
-        }
-      } catch (err: any) {
-        setError(err.message || 'Failed to get location')
-        setLoading(false)
-      }
-    }
-
-    initLocation()
+    setPharmacies(pharmacyData)
+    setFilteredPharmacies(pharmacyData)
+    setLoading(false)
   }, [])
 
-  // Search pharmacies when location or filters change
+  // Apply filters and search
   useEffect(() => {
-    if (!location) return
+    let filtered = pharmacies
 
-    const searchPharmacies = async () => {
-      setLoading(true)
-      try {
-        const results = await placesService.findNearbyPharmacies(location, filter.radius, {
-          open24Hours: filter.open24Hours,
-          minRating: filter.minRating,
-        })
-        
-        // Apply additional filters
-        let filtered = results
-        if (filter.openNow) {
-          filtered = filtered.filter((p) => p.isOpen)
-        }
-        
-        setPharmacies(filtered)
-      } catch (err: any) {
-        setError(err.message || 'Failed to load pharmacies')
-      } finally {
-        setLoading(false)
-      }
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(pharmacy =>
+        pharmacy.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        pharmacy.address?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
     }
 
-    searchPharmacies()
-  }, [location, filter])
+    // 24 hours filter
+    if (filter.open24Hours) {
+      filtered = filtered.filter(p => p.is24Hours)
+    }
 
-  const handleGetDirections = (pharmacy: PlaceResult) => {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${pharmacy.location.lat},${pharmacy.location.lng}`
-    window.open(url, '_blank')
+    // Rating filter
+    if (filter.minRating > 0) {
+      filtered = filtered.filter(p => (p.rating || 0) >= filter.minRating)
+    }
+
+    // Open now filter
+    if (filter.openNow) {
+      filtered = filtered.filter(p => p.isOpen)
+    }
+
+    setFilteredPharmacies(filtered)
+  }, [pharmacies, searchTerm, filter])
+
+  const handleGetDirections = (pharmacy: Pharmacy) => {
+    if (pharmacy.latitude && pharmacy.longitude) {
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${pharmacy.latitude},${pharmacy.longitude}`
+      window.open(url, '_blank')
+    } else if (pharmacy.address) {
+      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pharmacy.address)}`
+      window.open(url, '_blank')
+    }
   }
 
   const handleCall = (phone: string) => {
@@ -128,11 +190,11 @@ export default function PharmacyPage() {
   }
 
   const stats = {
-    total: pharmacies.length,
-    open24Hours: pharmacies.filter((p) => p.types.includes('24_hours') || p.name.toLowerCase().includes('24')).length,
-    openNow: pharmacies.filter((p) => p.isOpen).length,
-    avgRating: pharmacies.length
-      ? (pharmacies.reduce((sum, p) => sum + (p.rating || 0), 0) / pharmacies.filter((p) => p.rating).length).toFixed(1)
+    total: filteredPharmacies.length,
+    open24Hours: filteredPharmacies.filter((p) => p.is24Hours).length,
+    openNow: filteredPharmacies.filter((p) => p.isOpen).length,
+    avgRating: filteredPharmacies.length && filteredPharmacies.filter((p) => p.rating).length
+      ? (filteredPharmacies.reduce((sum, p) => sum + (p.rating || 0), 0) / filteredPharmacies.filter((p) => p.rating).length).toFixed(1)
       : '0',
   }
 
@@ -143,10 +205,9 @@ export default function PharmacyPage() {
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Pharmacies Near You</h1>
-              <p className="text-gray-600 mt-2 flex items-center">
-                <MapPin className="w-4 h-4 mr-2 text-primary-600" />
-                {locationName}
+              <h1 className="text-3xl font-bold text-gray-900">Pharmacies Directory</h1>
+              <p className="text-gray-600 mt-2">
+                Find medical stores and pharmacies across India
               </p>
             </div>
 
@@ -179,7 +240,7 @@ export default function PharmacyPage() {
       </div>
 
       {/* Stats */}
-      {!loading && pharmacies.length > 0 && (
+      {!loading && filteredPharmacies.length > 0 && (
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <motion.div
@@ -252,22 +313,22 @@ export default function PharmacyPage() {
         </div>
       )}
 
-      {/* Filters */}
+      {/* Search and Filters */}
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Search Radius</label>
-              <select
-                value={filter.radius}
-                onChange={(e) => setFilter({ ...filter, radius: Number(e.target.value) })}
-                className="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500"
-              >
-                <option value={2000}>2 km</option>
-                <option value={5000}>5 km</option>
-                <option value={10000}>10 km</option>
-                <option value={20000}>20 km</option>
-              </select>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Search Pharmacies</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by name or location..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
             </div>
 
             <div>
@@ -283,31 +344,24 @@ export default function PharmacyPage() {
                 <option value={4.5}>4.5+ Stars</option>
               </select>
             </div>
-
-            <div className="md:col-span-2 flex items-end">
-              <div className="text-sm text-gray-600">
-                <p className="font-medium">Real-time data from OpenStreetMap (FREE!)</p>
-                <p>Showing results within {filter.radius / 1000} km of your location</p>
-              </div>
-            </div>
           </div>
         </div>
       </div>
 
-      {/* Location Permission Error */}
+      {/* Error */}
       {error && (
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6">
             <div className="flex items-start">
               <AlertCircle className="w-6 h-6 text-red-600 mr-3 mt-1" />
               <div className="flex-1">
-                <h3 className="text-sm font-medium text-red-900 mb-2">Location Access Required</h3>
+                <h3 className="text-sm font-medium text-red-900 mb-2">Error Loading Pharmacies</h3>
                 <p className="text-sm text-red-700 mb-4">{error}</p>
                 <button
                   onClick={() => window.location.reload()}
                   className="px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 text-sm"
                 >
-                  Enable Location
+                  Try Again
                 </button>
               </div>
             </div>
@@ -320,16 +374,16 @@ export default function PharmacyPage() {
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <Loader className="w-12 h-12 animate-spin text-primary-600 mx-auto mb-4" />
-            <p className="text-gray-600">Finding pharmacies near you...</p>
+            <p className="text-gray-600">Loading pharmacies...</p>
           </div>
         </div>
       )}
 
       {/* Pharmacies List */}
-      {!loading && pharmacies.length > 0 && (
+      {!loading && filteredPharmacies.length > 0 && (
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {pharmacies.map((pharmacy, index) => (
+            {filteredPharmacies.map((pharmacy, index) => (
               <motion.div
                 key={pharmacy.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -337,29 +391,28 @@ export default function PharmacyPage() {
                 transition={{ delay: index * 0.05 }}
                 className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all border border-gray-200 overflow-hidden"
               >
-                {pharmacy.photos && pharmacy.photos[0] && (
-                  <img
-                    src={pharmacy.photos[0]}
-                    alt={pharmacy.name}
-                    className="w-full h-48 object-cover"
-                  />
-                )}
-
                 <div className="p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-3">{pharmacy.name}</h3>
 
                   <div className="space-y-2 mb-4">
-                    <div className="flex items-start text-sm text-gray-600">
-                      <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-gray-400" />
-                      <span className="line-clamp-2">{pharmacy.address}</span>
-                    </div>
+                    {pharmacy.address && (
+                      <div className="flex items-start text-sm text-gray-600">
+                        <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-gray-400" />
+                        <span className="line-clamp-2">{pharmacy.address}</span>
+                      </div>
+                    )}
 
-                    {pharmacy.distance && (
+                    {pharmacy.phone && (
                       <div className="flex items-center text-sm text-gray-600">
-                        <Navigation className="w-4 h-4 mr-2 text-gray-400" />
-                        <span className="font-medium text-primary-600">
-                          {pharmacy.distance.toFixed(1)} km away
-                        </span>
+                        <Phone className="w-4 h-4 mr-2 text-gray-400" />
+                        <span>{pharmacy.phone}</span>
+                      </div>
+                    )}
+
+                    {pharmacy.email && (
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Mail className="w-4 h-4 mr-2 text-gray-400" />
+                        <span className="truncate">{pharmacy.email}</span>
                       </div>
                     )}
 
@@ -367,7 +420,9 @@ export default function PharmacyPage() {
                       <div className="flex items-center text-sm">
                         <Star className="w-4 h-4 mr-1 text-yellow-400 fill-yellow-400" />
                         <span className="font-medium text-gray-900">{pharmacy.rating}</span>
-                        <span className="text-gray-500 ml-1">({pharmacy.totalRatings})</span>
+                        {pharmacy.totalRatings && (
+                          <span className="text-gray-500 ml-1">({pharmacy.totalRatings})</span>
+                        )}
                       </div>
                     )}
 
@@ -381,6 +436,34 @@ export default function PharmacyPage() {
                         <span className={pharmacy.isOpen ? 'text-green-600' : 'text-red-600'}>
                           {pharmacy.isOpen ? 'Open Now' : 'Closed'}
                         </span>
+                      </div>
+                    )}
+
+                    {pharmacy.is24Hours && (
+                      <div className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded">
+                        <Clock3 className="w-3 h-3 mr-1" />
+                        24/7 Available
+                      </div>
+                    )}
+
+                    {pharmacy.services && pharmacy.services.length > 0 && (
+                      <div className="mt-2">
+                        <p className="text-xs font-medium text-gray-700 mb-1">Services:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {pharmacy.services.slice(0, 3).map((service, idx) => (
+                            <span
+                              key={idx}
+                              className="inline-block px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded"
+                            >
+                              {service}
+                            </span>
+                          ))}
+                          {pharmacy.services.length > 3 && (
+                            <span className="inline-block px-2 py-0.5 text-gray-500 text-xs">
+                              +{pharmacy.services.length - 3} more
+                            </span>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -402,6 +485,15 @@ export default function PharmacyPage() {
                         <Phone className="w-4 h-4" />
                       </button>
                     )}
+                    {pharmacy.website && (
+                      <button
+                        onClick={() => window.open(pharmacy.website, '_blank')}
+                        className="py-2 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                        title="Website"
+                      >
+                        <Globe className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -411,17 +503,20 @@ export default function PharmacyPage() {
       )}
 
       {/* No Results */}
-      {!loading && pharmacies.length === 0 && location && !error && (
+      {!loading && filteredPharmacies.length === 0 && !error && (
         <div className="max-w-7xl mx-auto px-4 py-20 text-center">
           <Pill className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-600 text-lg">
-            No pharmacies found within {filter.radius / 1000} km of your location.
+            No pharmacies found matching your criteria.
           </p>
           <button
-            onClick={() => setFilter({ ...filter, radius: filter.radius * 2 })}
+            onClick={() => {
+              setSearchTerm('')
+              setFilter({ open24Hours: false, minRating: 0, openNow: false })
+            }}
             className="mt-4 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
           >
-            Expand Search Radius
+            Clear Filters
           </button>
         </div>
       )}
