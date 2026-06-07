@@ -53,7 +53,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "AI Assistant",     icon: <Bot                  size={17} />, badge: "AI", href: "/ai" },
   { label: "Health Report Engine", icon: <Activity         size={17} />, badge: "AI", href: "/health-intelligence" },
   { label: "Patient History",  icon: <ClipboardList        size={17} />, href: "/patient/history" },
-  { label: "Appointments",     icon: <Calendar             size={17} />, href: "/patient/appointments" },
+  // { label: "Appointments",     icon: <Calendar             size={17} />, href: "/patient/appointments" },
   { label: "Analytics",        icon: <BarChart3            size={17} />, href: "/patient/analytics" },
   // { label: "Blood Bank",       icon: <Droplets             size={17} />, href: "/blood-bank" },
   { label: "Pharmacy",         icon: <Pill                 size={17} />, href: "/pharmacy" },
@@ -240,7 +240,7 @@ function SidebarContent({ pathname }: { pathname: string }) {
           <SidebarItem key={item.label} item={item} active={isActive(item.href)} />
         ))}
       </nav>
-      <SystemStatus />
+      {/* <SystemStatus /> */}
       <EmergencyCallBtn />
     </div>
   );
@@ -661,17 +661,6 @@ border: "1px solid #E2E8F0",
         <div className="flex items-center gap-3 ml-auto">
           
           {/* LANGUAGE */}
-          <button
-            className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-300 hover:scale-[1.02]"
-            style={{
-              background: "rgba(255,255,255,.03)",
-              border: "1px solid rgba(255,255,255,.06)",
-            }}
-          >
-            <Globe size={15} style={{ color: "#22d3ee" }} />
-            <span className="text-sm text-white">English</span>
-            <ChevronDown size={13} className="text-gray-500" />
-          </button>
 
           {/* NOTIFICATION */}
           {/* <button
