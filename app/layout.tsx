@@ -1,6 +1,7 @@
 import "../styles/globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import Navbar from "@/components/layout/Navbar";
+import { ChatbotWidget } from "@/components/ChatbotWidget";
 
 export const metadata = {
   title: "LifeLine AI",
@@ -18,6 +19,7 @@ export default function RootLayout({
         <AuthProvider>
           <Navbar>
             {children}
+             <ChatbotWidget /> 
           </Navbar>
         </AuthProvider>
       </body>
