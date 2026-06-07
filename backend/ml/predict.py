@@ -1,25 +1,35 @@
-import sys
+from fastapi import FastAPI
 import joblib
 import numpy as np
 
+app = FastAPI()
+
 model = joblib.load("ml/lifeline_health_model.pkl")
 
-sleep_duration = float(sys.argv[1])
-quality_sleep = float(sys.argv[2])
-physical_activity = float(sys.argv[3])
-stress_level = float(sys.argv[4])
-heart_rate = float(sys.argv[5])
-daily_steps = float(sys.argv[6])
+@app.get("/")
+def root():
+    return {"status": "running"}
 
-input_data = np.array([[
-    sleep_duration,
-    quality_sleep,
-    physical_activity,
-    stress_level,
-    heart_rate,
-    daily_steps
-]])
+@app.post("/predict")
+def predict(
+    sleep_duration: float,
+    quality_sleep: float,
+    physical_activity: float,
+    stress_level: float,
+    heart_rate: float,
+    daily_steps: float
+):
+    input_data = np.array([[
+        sleep_duration,
+        quality_sleep,
+        physical_activity,
+        stress_level,
+        heart_rate,
+        daily_steps
+    ]])
 
-prediction = model.predict(input_data)
+    prediction = model.predict(input_data)
 
-print(prediction[0])
+    return {
+        "health_score": float(prediction[0])
+    }

@@ -51,6 +51,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Ambulances",       icon: <Truck                size={17} />, hasSubmenu: true, href: "/ambulances" },
   { label: "Find Doctor",      icon: <Stethoscope          size={17} />, href: "/patient/find-doctor" },
   { label: "AI Assistant",     icon: <Bot                  size={17} />, badge: "AI", href: "/ai" },
+  { label: "Health Report Engine", icon: <Activity         size={17} />, badge: "AI", href: "/health-intelligence" },
   { label: "Patient History",  icon: <ClipboardList        size={17} />, href: "/patient/history" },
   { label: "Appointments",     icon: <Calendar             size={17} />, href: "/patient/appointments" },
   { label: "Analytics",        icon: <BarChart3            size={17} />, href: "/patient/analytics" },

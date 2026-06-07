@@ -8,12 +8,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { createServer } from 'http';
-<<<<<<< HEAD
-import healthRoutes from './modules/health/health.routes';
-=======
 import { Server as SocketIOServer } from 'socket.io';
->>>>>>> 4486a0a28cfbc695a2ab15393beb31d587bbb954
-
+import healthRoutes from './modules/health/health.routes';
 // Config
 import { ENV } from './config/env';
 import { connectDatabase } from './config/database';
@@ -181,15 +177,15 @@ app.use(`${API_BASE}/patient-profile`, patientProfileRoutes);
 console.log('  ✓ Patient routes mounted at', `${API_BASE}/patient`);
 
 app.use(`${API_BASE}/appointments`, appointmentRoutes);
-<<<<<<< HEAD
-app.use(`${API_BASE}/health`, healthRoutes);
-=======
 console.log('  ✓ Appointment routes mounted at', `${API_BASE}/appointments`);
+
+app.use(`${API_BASE}/health`, healthRoutes);
+console.log('  ✓ Health routes mounted at', `${API_BASE}/health`);
 
 app.use(`${API_BASE}/hms`, hmsRoutes);
 console.log('  ✓ HMS routes mounted at', `${API_BASE}/hms`);
+
 console.log('✅ All routes registered\n');
->>>>>>> 4486a0a28cfbc695a2ab15393beb31d587bbb954
 
 // ── Dashboard Stats (public for dev) ──────────────────────────────
 import mongoose from 'mongoose';
