@@ -661,17 +661,6 @@ border: "1px solid #E2E8F0",
         <div className="flex items-center gap-3 ml-auto">
           
           {/* LANGUAGE */}
-          <button
-            className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-300 hover:scale-[1.02]"
-            style={{
-              background: "rgba(255,255,255,.03)",
-              border: "1px solid rgba(255,255,255,.06)",
-            }}
-          >
-            <Globe size={15} style={{ color: "#22d3ee" }} />
-            <span className="text-sm text-white">English</span>
-            <ChevronDown size={13} className="text-gray-500" />
-          </button>
 
           {/* NOTIFICATION */}
           {/* <button
