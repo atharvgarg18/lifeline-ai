@@ -240,7 +240,7 @@ function SidebarContent({ pathname }: { pathname: string }) {
           <SidebarItem key={item.label} item={item} active={isActive(item.href)} />
         ))}
       </nav>
-      <SystemStatus />
+      {/* <SystemStatus /> */}
       <EmergencyCallBtn />
     </div>
   );
