@@ -561,54 +561,7 @@ border:
   <div className="col-span-12 xl:col-span-3 flex flex-col gap-4 min-w-0">
 
     {/* AI Assistant */}
-    <motion.div
-            {...fadeUp(0.15)}
-            className="
-relative rounded-2xl p-5 overflow-hidden
-before:absolute before:inset-0 before:rounded-[inherit]
-before:border before:border-white/[0.03]
-before:pointer-events-none
- min-h-[190px]"
-            style={CARD_STYLE}
-          >
-            {/* cyan glow */}
-            <div className="absolute top-0 right-0 w-48 h-48 pointer-events-none"
-              style={{ background: "radial-gradient(circle, rgba(6,182,212,0.12) 0%, transparent 70%)", transform: "translate(25%, -25%)" }} />
-
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-slate-800 font-bold text-base">AI Assistant</h3>
-                  <motion.div className="flex items-center gap-1 bg-emerald-500/15 rounded-full px-2 py-0.5 border border-emerald-500/30"
-                    animate={{ opacity: [1, 0.7, 1] }} transition={{ duration: 2, repeat: Infinity }}>
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                    <span className="text-emerald-400 text-xs font-semibold">Online</span>
-                  </motion.div>
-                </div>
-                <p className="text-slate-400 text-sm leading-relaxed max-w-[150px]">
-                  Hello! I'm your AI health assistant. How can I help you?
-                </p>
-              </div>
-              <RobotSVG />
-            </div>
-
-            <motion.button
-              whileHover={{
-  scale: 1.03,
-  boxShadow: "0 10px 24px rgba(37,99,235,0.18)",
-}}
-              whileTap={{ scale: 0.97 }}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm text-white"
-              style={{
-                background: "linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)",
-                border: "1px solid rgba(37,99,235,0.18)",
-                
-              }}
-            >
-              <MessageCircle size={16} />
-              Chat Now
-            </motion.button>
-          </motion.div>
+    
 
     {/* Patient Summary */}
     <motion.div
