@@ -46,19 +46,19 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard",        icon: <LayoutDashboard      size={17} />, href: "/patient/dashboard" },
   { label: "Emergency SOS",    icon: <AlertCircle          size={17} />, badge: "SOS", href: "/emergency" },
-  { label: "Live Tracking",    icon: <MapPin               size={17} />, href: "/tracking" },
+  // { label: "Live Tracking",    icon: <MapPin               size={17} />, href: "/tracking" },
   { label: "Hospitals",        icon: <Building2            size={17} />, hasSubmenu: true, href: "/hospitals" },
-  { label: "Ambulances",       icon: <Truck                size={17} />, hasSubmenu: true, href: "/ambulances" },
+  // { label: "Ambulances",       icon: <Truck                size={17} />, hasSubmenu: true, href: "/ambulances" },
   { label: "Find Doctor",      icon: <Stethoscope          size={17} />, href: "/patient/find-doctor" },
   { label: "AI Assistant",     icon: <Bot                  size={17} />, badge: "AI", href: "/ai" },
   { label: "Patient History",  icon: <ClipboardList        size={17} />, href: "/patient/history" },
   { label: "Appointments",     icon: <Calendar             size={17} />, href: "/patient/appointments" },
   { label: "Analytics",        icon: <BarChart3            size={17} />, href: "/patient/analytics" },
-  { label: "Blood Bank",       icon: <Droplets             size={17} />, href: "/blood-bank" },
+  // { label: "Blood Bank",       icon: <Droplets             size={17} />, href: "/blood-bank" },
   { label: "Pharmacy",         icon: <Pill                 size={17} />, href: "/pharmacy" },
-  { label: "Complaints",       icon: <MessageCircle size={17} />, href: "/complaints" },
+  // { label: "Complaints",       icon: <MessageCircle size={17} />, href: "/complaints" },
   { label: "Settings",         icon: <Settings             size={17} />, href: "/settings" },
-  { label: "Help & Support",   icon: <HelpCircle           size={17} />, href: "/help" },
+  // { label: "Help & Support",   icon: <HelpCircle           size={17} />, href: "/help" },
 ];
 
 
@@ -673,7 +673,7 @@ border: "1px solid #E2E8F0",
           </button>
 
           {/* NOTIFICATION */}
-          <button
+          {/* <button
             className="relative p-2.5 rounded-xl transition-all duration-300 hover:scale-105"
             style={{
               background: "rgba(255,255,255,.03)",
@@ -692,7 +692,7 @@ border: "1px solid #E2E8F0",
             >
               3
             </span>
-          </button>
+          </button> */}
 
           {/* PROFILE */}
           <UserProfileBlock />
